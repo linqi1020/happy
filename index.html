@@ -1,2894 +1,1231 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>过程就是奖励</title>
-  <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-
-  body {
-	background: #000;
-	overflow: hidden;
-	font-family: "Microsoft YaHei", sans-serif;
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>您好，初次见面</title>
+<style>
+  :root{
+	--fs: "宋体", SimSun, "Songti SC", "STSong", serif;
+	--hei: "黑体","SimHei","Microsoft YaHei","PingFang SC",sans-serif;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; margin:0; overflow:hidden; }
+  body{
+	background: radial-gradient(circle at 30% 20%, #26303f, #08090c 70%);
+	color:#fff;
+	font-family: var(--fs);
   }
 
-  /* ===== 全局返回按钮（5px 小箭头，可点击区域稍大） ===== */
-  #backBtn {
+  /* ================= 背景图片层 ================= */
+  #bgLayer{
+	position:fixed; inset:0; z-index:0;
+	background-image: url('com.xingin.xhs_20261023093519.jpg');
+	background-size:cover;
+	background-position:center;
+	background-repeat:no-repeat;
+	opacity: 0.41;
+  }
+
+  /* ================= 右上角音乐播放器 ================= */
+  .music-widget {
 	position: fixed;
-	top: 12px;
-	left: 12px;
-	z-index: 10001;
-	font-size: 5px;
-	line-height: 1;
-	color: rgba(255, 255, 255, .8);
-	background: transparent;
-	border: none;
-	cursor: pointer;
-	padding: 8px;
-	display: none;
-	font-family: Consolas, monospace;
-	user-select: none;
-	transition: opacity .25s ease, color .25s ease;
-  }
-  #backBtn:hover { opacity: 1; color: #fff; }
-  #backBtn:active { transform: scale(.95); }
-
-  .page-layer {
-	position: fixed;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	transition: opacity 1s ease, visibility 1s ease;
+	top: 22px;
+	right: 22px;
+	z-index: 100;
   }
 
-  /* ================= 第一页 ================= */
-  #page1 {
-	z-index: 10;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	opacity: 1;
-	visibility: visible;
-  }
-  #page1.fade-out {
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-  }
-
-  #snow-layer {
-	position: absolute;
-	inset: 0;
-	overflow: hidden;
-	pointer-events: none;
-	z-index: 1;
-  }
-
-  .snowflake {
-	position: absolute;
-	top: -15vh;
-	will-change: transform;
-	animation-name: snowfall;
-	animation-timing-function: linear;
-	animation-iteration-count: infinite;
-	mix-blend-mode: screen;
-	user-select: none;
-	-webkit-user-drag: none;
-  }
-
-  @keyframes snowfall {
-	from { transform: translate3d(0, 0, 0) rotate(0deg); }
-	to   { transform: translate3d(var(--drift), 132vh, 0) rotate(var(--spin)); }
-  }
-
-  .center {
-	position: relative;
-	z-index: 2;
-	width: min(510px, 85vw);
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	gap: 16.5px;
-  }
-
-  .title {
-	text-align: center;
-	font-family: "FangSong", "仿宋", "STFangsong", "华文仿宋", serif;
-	font-size: clamp(14.25px, 2.25vw, 24px);
-	letter-spacing: .14em;
-	color: #f2f9ff;
-	text-shadow:
-	  0 0 4.5px  rgba(190, 225, 255, .95),
-	  0 0 12px  rgba(140, 190, 235, .85),
-	  0 0 24px rgba(105, 160, 220, .65),
-	  0 0 45px rgba(80, 135, 200, .45);
-	animation: titleIn 1.6s cubic-bezier(.22, .61, .36, 1) .15s both;
-	transition: opacity .8s ease, filter .8s ease, transform .8s ease;
-  }
-
-  @keyframes titleIn {
-	from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
-	to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
-  }
-
-  .progress-wrap {
-	animation: fadeIn 1.2s ease-out .4s both;
-	transition: opacity .8s ease, filter .8s ease, transform .8s ease;
-  }
-
-  @keyframes fadeIn {
-	from { opacity: 0; }
-	to   { opacity: 1; }
-  }
-
-  .progress-num {
-	text-align: right;
-	font-family: Consolas, "Courier New", monospace;
-	font-size: 10.5px;
-	letter-spacing: .08em;
-	color: #cfe6fa;
-	margin-bottom: 6px;
-	text-shadow: 0 0 6px rgba(150, 200, 240, .85);
-  }
-
-  .progress-track {
-	width: 100%;
-	height: 19.5px;
-	border: 1.5px solid #ffffff;
-	border-radius: 999px;
-	padding: 2.25px;
-	background: rgba(255, 255, 255, .03);
-	box-shadow:
-	  0 0 10.5px rgba(255, 255, 255, .18),
-	  inset 0 0 7.5px rgba(255, 255, 255, .06);
-  }
-
-  .progress-fill {
-	height: 100%;
-	width: 0%;
-	border-radius: 999px;
-	background: linear-gradient(90deg, #8FB4D6 0%, #A9C9E6 55%, #9DBFDD 100%);
-	box-shadow:
-	  0 0 9px rgba(160, 200, 240, .75),
-	  0 0 19.5px rgba(120, 170, 225, .45);
-  }
-
-  .enter-btn {
-	font-family: "FangSong", "仿宋", "STFangsong", "华文仿宋", serif;
-	font-size: 14px;
-	line-height: 1.4;
-	text-align: center;
-	letter-spacing: .2em;
-	color: #eaf6ff;
-	padding: 10px 18px;
-	margin-top: 16.5px;
-	text-shadow:
-	  0 0 6px rgba(170, 215, 255, .95),
-	  0 0 14px rgba(120, 175, 235, .70);
-	opacity: 0;
-	pointer-events: none;
-	cursor: pointer;
-	user-select: none;
-	transition:
-	  opacity .6s ease,
-	  transform .7s cubic-bezier(.35, 0, .4, 1),
-	  filter .7s ease,
-	  text-shadow .3s ease;
-  }
-  .enter-btn.show { opacity: .95; pointer-events: auto; }
-  .enter-btn.show:hover {
-	opacity: 1;
-	text-shadow: 0 0 8px #cfe9ff, 0 0 20px rgba(150, 200, 255, .9);
-  }
-
-  .title.dissolve {
-	animation: none;
-	opacity: 0;
-	filter: blur(14px);
-	transform: translateY(-24px) scale(.96);
-  }
-  .progress-wrap.dissolve {
-	animation: none;
-	opacity: 0;
-	filter: blur(12px);
-	transform: translateY(24px) scale(.96);
-  }
-  .enter-btn.expand {
-	opacity: 0;
-	transform: scale(2.8);
-	filter: blur(10px);
-  }
-
-  /* ================= 第二页 ================= */
-  #page2 {
-	z-index: 5;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	background:
-	  radial-gradient(circle at 50% 26%, rgba(22, 36, 56, .70), rgba(0, 0, 0, 0) 62%),
-	  #000;
-  }
-  #page2.active { opacity: 1; visibility: visible; pointer-events: auto; }
-
-  .page-inner {
-	position: relative;
-	z-index: 2;
-	height: 100%;
-	overflow-y: auto;
-	overflow-x: hidden;
-	display: flex;
-	justify-content: center;
-	align-items: flex-start;
-	padding: 6vh 20px 8vh;
-	-webkit-overflow-scrolling: touch;
-  }
-
-  .content-col {
-	width: min(560px, 90vw);
-	display: flex;
-	flex-direction: column;
-	gap: 18px;
-  }
-
-  .player {
-	width: 100%;
-	height: fit-content;
-	display: flex;
-	gap: 20px;
-	align-items: center;
-	padding: 20px 22px;
-	border-radius: 28px;
-	border: 1px solid rgba(170, 210, 250, .20);
-	background: rgba(24, 34, 50, 0.30);
-	backdrop-filter: blur(16px) saturate(130%);
-	-webkit-backdrop-filter: blur(16px) saturate(130%);
-	box-shadow:
-	  0 10px 42px rgba(0, 0, 0, .50),
-	  0 0 26px rgba(120, 170, 225, .16),
-	  inset 0 0 26px rgba(150, 195, 245, .05);
-  }
-
-  #page2.active .player {
-	animation: playerIn 1.1s cubic-bezier(.22, .61, .36, 1) .15s both;
-  }
-
-  @keyframes playerIn {
-	from { opacity: 0; transform: translateY(-18px); filter: blur(8px); }
-	to   { opacity: 1; transform: translateY(0);     filter: blur(0);   }
-  }
-
-  .cover {
-	flex: 0 0 auto;
-	width: 90px;
-	height: 90px;
-	border-radius: 18px;
-	border: 1px solid rgba(160, 200, 240, .28);
-	background:
-	  radial-gradient(circle at 30% 25%, rgba(143, 180, 214, .30), transparent 60%),
-	  linear-gradient(145deg, rgba(60, 80, 105, .40), rgba(20, 28, 40, .55));
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 28px;
-	color: rgba(200, 225, 255, .55);
-	text-shadow: 0 0 12px rgba(150, 200, 255, .5);
-	overflow: hidden;
-	box-shadow: 0 0 16px rgba(120, 170, 225, .22);
-  }
-  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  .info {
-	flex: 1 1 auto;
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-  }
-
-  .song-title {
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 17px;
-	letter-spacing: .08em;
-	color: #f0f8ff;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	text-shadow: 0 0 10px rgba(140, 195, 255, .55);
-  }
-
-  .artist {
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 12px;
-	letter-spacing: .1em;
-	color: rgba(190, 215, 240, .75);
-  }
-
-  .progress {
-	margin-top: 4px;
-	width: 100%;
-	height: 4px;
-	border-radius: 999px;
-	background: rgba(255, 255, 255, .12);
-	overflow: hidden;
-	cursor: pointer;
-  }
-  .progress-fill {
-	height: 100%;
-	width: 0%;
-	border-radius: 999px;
-	background: linear-gradient(90deg, #8FB4D6, #A9C9E6);
-	box-shadow: 0 0 8px rgba(160, 200, 240, .8);
-  }
-
-  .time-row {
-	display: flex;
-	justify-content: space-between;
-	font-family: Consolas, "Courier New", monospace;
-	font-size: 10px;
-	color: rgba(180, 210, 240, .6);
-	letter-spacing: .05em;
-  }
-
-  .controls {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	margin-top: 2px;
-  }
-
-  .ctrl {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: none;
-	background: transparent;
-	color: rgba(210, 230, 250, .85);
-	cursor: pointer;
-	padding: 0;
-	transition: color .25s ease, transform .25s ease, box-shadow .25s ease;
-  }
-  .ctrl:hover { color: #fff; transform: scale(1.08); }
-
-  .ctrl.side {
-	width: 30px;
-	height: 30px;
-	border-radius: 50%;
-	border: 1px solid rgba(160, 200, 240, .3);
-  }
-
-  .ctrl.play {
-	width: 44px;
-	height: 44px;
-	border-radius: 50%;
-	color: #0b1220;
-	background: linear-gradient(145deg, #B4D2EE, #7FA9CF);
-	box-shadow:
-	  0 0 14px rgba(150, 200, 245, .65),
-	  0 0 30px rgba(120, 170, 225, .35);
-  }
-  .ctrl.play:hover {
-	box-shadow:
-	  0 0 18px rgba(180, 220, 255, .85),
-	  0 0 40px rgba(130, 180, 235, .5);
-  }
-
-  .playlist-bar {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-top: 6px;
-	padding-top: 12px;
-	border-top: 1px solid rgba(170, 210, 250, .14);
-	flex-wrap: wrap;
-  }
-
-  .playlist-label {
-	flex: 0 0 auto;
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 11px;
-	letter-spacing: .12em;
-	color: rgba(180, 210, 240, .55);
-  }
-
-  .playlist {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex-wrap: wrap;
-	flex: 1 1 auto;
-	min-width: 0;
-  }
-
-  .song-chip {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 14px;
-	border-radius: 999px;
-	border: 1px solid rgba(160, 200, 240, .30);
-	background: rgba(143, 180, 214, .10);
-	color: #dbeaf8;
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 12px;
-	letter-spacing: .06em;
-	cursor: pointer;
-	white-space: nowrap;
-	user-select: none;
-	transition: background .25s ease, color .25s ease, box-shadow .25s ease, border-color .25s ease;
-	max-width: 100%;
-	overflow: hidden;
-	text-overflow: ellipsis;
-  }
-  .song-chip:hover { background: rgba(143, 180, 214, .24); color: #fff; }
-  .song-chip.active {
-	background: linear-gradient(145deg, rgba(180, 212, 240, .95), rgba(127, 169, 207, .95));
-	border-color: rgba(200, 230, 255, .85);
-	color: #0b1220;
-	font-weight: 700;
-	box-shadow:
-	  0 0 12px rgba(150, 200, 245, .60),
-	  0 0 26px rgba(120, 170, 225, .32);
-  }
-  .song-chip .chip-icon { flex: 0 0 auto; display: inline-flex; }
-
-  .greeting {
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
-	gap: 34px;
-	padding: 0;
-	border: none;
-	background: none;
-	box-shadow: none;
-  }
-
-  #page2.active .greeting {
-	animation: greetingIn 1.2s cubic-bezier(.22, .61, .36, 1) 1.05s both;
-  }
-
-  @keyframes greetingIn {
-	from { opacity: 0; transform: translateY(16px); filter: blur(8px); }
-	to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
-  }
-
-  .greet-text {
-	font-family: "Classico", "Classico Pro", "FangSong", "仿宋", Georgia, serif;
-	font-size: 20px;
-	line-height: 1.7;
-	letter-spacing: .14em;
-	color: #ffffff;
-	text-shadow: 0 0 12px rgba(150, 200, 255, .55);
-	white-space: nowrap;
-  }
-
-  .greet-name {
-	display: inline-block;
-	font-size: 2em;
-	line-height: 1.1;
-	letter-spacing: .1em;
-  }
-
-  .datetime-row {
-	flex: 0 0 auto;
-	display: flex;
-	align-items: center;
-	gap: 22px;
-  }
-
-  .clock-wrap,
-  .date-wrap {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 4px;
-  }
-
-  .clock-label {
-	font-family: "Classico", "Classico Pro", Georgia, serif;
-	font-size: 10px;
-	letter-spacing: .22em;
-	color: #ffffff;
-	opacity: .55;
-	white-space: nowrap;
-  }
-
-  .clock {
-	font-family: "Classico", "Classico Pro", Georgia, Consolas, monospace;
-	font-size: 18px;
-	letter-spacing: .10em;
-	color: #ffffff;
-	text-shadow: 0 0 14px rgba(150, 200, 255, .70);
-	font-variant-numeric: tabular-nums;
-	white-space: nowrap;
-  }
-
-  .date {
-	font-family: "Classico", "Classico Pro", Georgia, Consolas, monospace;
-	font-size: 18px;
-	letter-spacing: .10em;
-	color: #ffffff;
-	text-shadow: 0 0 14px rgba(150, 200, 255, .70);
-	font-variant-numeric: tabular-nums;
-	white-space: nowrap;
-  }
-
-  /* ================= 弹窗区域 ================= */
-  .toast-area {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	margin-top: 6px;
-  }
-
-  .toast-item {
-	position: relative;
-	width: 100%;
-	display: flex;
-	gap: 11px;
-	align-items: flex-start;
-	padding: 11px 14px;
-	border-radius: 16px;
-	border: 1px solid rgba(170, 210, 250, .18);
-	background: rgba(28, 38, 55, .86);
-	backdrop-filter: blur(18px) saturate(140%);
-	-webkit-backdrop-filter: blur(18px) saturate(140%);
-	box-shadow:
-	  0 10px 30px rgba(0, 0, 0, .55),
-	  0 0 18px rgba(120, 170, 225, .10);
-	cursor: pointer;
-	user-select: none;
-	transform: translateY(280px);
-	opacity: 0;
-	transition:
-	  transform 1.1s cubic-bezier(.22, .61, .36, 1),
-	  opacity .75s ease,
-	  border-color .4s ease,
-	  box-shadow .4s ease;
-	will-change: transform, opacity;
-  }
-  .toast-item.entered { transform: translateY(0); opacity: 1; }
-
-  .toast-item[data-jump] { cursor: pointer; }
-  .toast-item[data-jump]::before {
-	content: "点击进入 →";
-	position: absolute;
-	right: 14px;
-	bottom: 8px;
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 10px;
-	letter-spacing: .06em;
-	color: rgba(150, 200, 245, .55);
-	pointer-events: none;
-  }
-
-  .toast-icon {
-	flex: 0 0 auto;
-	width: 34px;
-	height: 34px;
-	border-radius: 10px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 17px;
-	background: linear-gradient(145deg, rgba(180, 210, 238, .95), rgba(127, 169, 207, .95));
-	box-shadow: 0 0 12px rgba(150, 200, 245, .45);
-	overflow: hidden;
-	position: relative;
-  }
-  .toast-icon img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	display: block;
-	border-radius: inherit;
-  }
-
-  .toast-icon[data-avatar-key] { cursor: pointer; }
-  .toast-icon[data-avatar-key]::after {
-	content: "✎";
-	position: absolute;
-	inset: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 14px;
-	color: #fff;
-	background: rgba(10, 16, 26, .55);
-	opacity: 0;
-	transition: opacity .25s ease;
-	pointer-events: none;
-  }
-  .toast-icon[data-avatar-key]:hover::after { opacity: 1; }
-
-  .toast-body {
-	flex: 1 1 auto;
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-  }
-
-  .toast-head {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: 8px;
-  }
-
-  .toast-name {
-	font-size: 12.5px;
-	font-weight: 700;
-	letter-spacing: .02em;
-	color: #eaf4ff;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	text-shadow: 0 0 8px rgba(150, 200, 255, .35);
-  }
-
-  .toast-time {
-	flex: 0 0 auto;
-	font-size: 10px;
-	color: rgba(175, 205, 235, .55);
-  }
-
-  .toast-msg {
-	font-size: 12.5px;
-	line-height: 1.5;
-	color: rgba(220, 235, 250, .86);
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-	word-break: break-word;
-  }
-
-  .toast-item.expanded {
-	border-color: rgba(170, 210, 250, .42);
-	box-shadow:
-	  0 16px 44px rgba(0, 0, 0, .62),
-	  0 0 26px rgba(140, 190, 245, .28),
-	  inset 0 0 20px rgba(150, 195, 245, .06);
-  }
-  .toast-item.expanded .toast-msg {
-	display: block;
-	-webkit-line-clamp: unset;
-	overflow: visible;
-  }
-
-  /* ================= 右上角音乐控制按钮 ================= */
-  #musicFab {
-	position: fixed;
-	top: 18px;
-	right: 18px;
-	z-index: 999;
+  .music-ctrl {
 	width: 46px;
 	height: 46px;
 	border-radius: 50%;
+	border: 1px solid rgba(255,255,255,.55);
+	background: rgba(255,255,255,.15);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	color: #fff;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border: 1px solid rgba(170, 210, 250, .35);
-	background: rgba(20, 30, 45, .62);
-	backdrop-filter: blur(14px) saturate(140%);
-	-webkit-backdrop-filter: blur(14px) saturate(140%);
-	box-shadow:
-	  0 6px 20px rgba(0, 0, 0, .45),
-	  0 0 14px rgba(120, 170, 225, .20);
 	cursor: pointer;
-	user-select: none;
-	transition: background .25s ease, box-shadow .25s ease, transform .25s ease, opacity .6s ease;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
-  #musicFab:hover {
-	background: rgba(30, 44, 64, .78);
-	box-shadow:
-	  0 8px 26px rgba(0, 0, 0, .55),
-	  0 0 20px rgba(140, 190, 245, .35);
+  .music-ctrl:hover { background: rgba(255,255,255,.3); transform: scale(1.06); }
+  .music-ctrl:active { transform: scale(0.95); }
+  .music-ctrl svg {
+	width: 22px;
+	height: 22px;
+	fill: currentColor;
+	transition: transform 0.3s;
   }
-  #musicFab svg { width: 22px; height: 22px; color: #dbeaf8; display: block; }
-  #musicFab.playing svg {
-	animation: spin 3.4s linear infinite;
-	transform-origin: 50% 50%;
+  /* 播放时的旋转动画 */
+  .music-ctrl.playing svg {
+	animation: spin 3s linear infinite;
   }
   @keyframes spin {
-	from { transform: rotate(0deg); }
-	to   { transform: rotate(360deg); }
+	100% { transform: rotate(360deg); }
   }
 
-  /* ================= 第三页：密钥验证 ================= */
-  #pageKey {
-	z-index: 6;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: #000;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	transition: opacity .4s ease, visibility .4s ease;
-  }
-  #pageKey.active { opacity: 1; visibility: visible; pointer-events: auto; }
-
-  .key-card {
-	width: min(360px, 86vw);
-	padding: 34px 28px 30px;
-	border-radius: 24px;
-	border: 1px solid rgba(170, 210, 250, .22);
-	background: rgba(20, 30, 45, .55);
-	backdrop-filter: blur(18px) saturate(140%);
-	-webkit-backdrop-filter: blur(18px) saturate(140%);
-	box-shadow:
-	  0 18px 50px rgba(0, 0, 0, .62),
-	  0 0 28px rgba(120, 170, 225, .14),
-	  inset 0 0 26px rgba(150, 195, 245, .05);
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-  }
-
-  #pageKey.active .key-card {
-	animation: keyCardIn .8s cubic-bezier(.22, .61, .36, 1) both;
-  }
-  @keyframes keyCardIn {
-	from { opacity: 0; transform: translateY(20px) scale(.96); filter: blur(6px); }
-	to   { opacity: 1; transform: translateY(0) scale(1);      filter: blur(0);   }
-  }
-
-  .key-title {
-	text-align: center;
-	font-family: "FangSong", "仿宋", "STFangsong", "华文仿宋", serif;
-	font-size: 19px;
-	letter-spacing: .18em;
-	color: #eef7ff;
-	text-shadow:
-	  0 0 8px rgba(170, 215, 255, .75),
-	  0 0 20px rgba(120, 175, 235, .45);
-  }
-
-  .key-error {
-	min-height: 18px;
-	font-family: "FangSong", "仿宋", "STFangsong", "华文仿宋", serif;
-	font-size: 12.5px;
-	letter-spacing: .06em;
-	color: #ff5d5d;
-	text-align: center;
-	text-shadow: 0 0 8px rgba(255, 80, 80, .45);
-	opacity: 0;
-	transition: opacity .25s ease;
-  }
-  .key-error.show { opacity: 1; }
-
-  .key-input {
-	width: 100%;
-	padding: 11px 14px;
-	border-radius: 12px;
-	border: 1px solid rgba(160, 200, 240, .32);
-	background: rgba(10, 16, 26, .55);
-	color: #eaf4ff;
-	font-family: Consolas, "Courier New", monospace;
-	font-size: 14px;
-	letter-spacing: .12em;
-	outline: none;
-	transition: border-color .25s ease, box-shadow .25s ease;
-  }
-  .key-input::placeholder {
-	color: rgba(170, 200, 230, .38);
-	letter-spacing: .08em;
-  }
-  .key-input:focus {
-	border-color: rgba(180, 215, 255, .70);
-	box-shadow: 0 0 14px rgba(140, 190, 245, .30);
-  }
-
-  .key-submit {
-	width: 100%;
-	padding: 11px 0;
-	border-radius: 999px;
-	border: 1px solid rgba(160, 200, 240, .35);
-	background: linear-gradient(145deg, rgba(180, 212, 240, .92), rgba(127, 169, 207, .92));
-	color: #0b1220;
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 14px;
-	font-weight: 700;
-	letter-spacing: .22em;
-	cursor: pointer;
-	user-select: none;
-	opacity: 0;
-	pointer-events: none;
-	transition: box-shadow .25s ease, transform .2s ease, filter .25s ease, opacity .3s ease;
-  }
-  .key-submit.visible { opacity: 1; pointer-events: auto; }
-  .key-submit:hover {
-	box-shadow:
-	  0 0 16px rgba(150, 200, 245, .65),
-	  0 0 32px rgba(120, 170, 225, .35);
-	filter: brightness(1.05);
-  }
-  .key-submit:active { transform: scale(.97); }
-  .key-submit:disabled { opacity: .4 !important; cursor: default; filter: grayscale(1); }
-
-  /* 沙子消散 */
-  .sand-out {
-	animation: sandOut 1s cubic-bezier(.4, 0, .2, 1) forwards;
-	pointer-events: none;
-  }
-  @keyframes sandOut {
-	0%   { opacity: 1; filter: blur(0);    transform: translateY(0)    scale(1); }
-	35%  { opacity: .75; filter: blur(1.5px); transform: translateY(3px) scale(.99); }
-	100% { opacity: 0; filter: blur(14px); transform: translateY(28px) scale(.92); }
-  }
-
-  .sand-particle {
-	position: fixed;
-	border-radius: 50%;
-	background: #bfe0ff;
-	pointer-events: none;
-	z-index: 2000;
-	animation: sandFly 1.2s ease-out forwards;
-  }
-  @keyframes sandFly {
-	0%   { opacity: 1; transform: translate(0, 0) scale(1); }
-	100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.3); }
-  }
-
-  /* ================= 第四页：信封动画 ================= */
-  #pageEnvelope {
-	z-index: 7;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: #000;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-  }
-  #pageEnvelope.active { opacity: 1; visibility: visible; pointer-events: auto; }
-
-  .envelope-scene {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 30px;
-	perspective: 1200px;
-  }
-
-  .envelope {
-	position: relative;
+  /* 展开的播放器面板 */
+  .music-panel {
+	position: absolute;
+	top: 58px;
+	right: 0;
 	width: 260px;
-	height: 170px;
-	cursor: pointer;
-	transform-style: preserve-3d;
-  }
-
-  #pageEnvelope.active .envelope {
-	animation: envelopeIn .9s cubic-bezier(.22, .61, .36, 1) both;
-  }
-
-  @keyframes envelopeIn {
-	from { opacity: 0; transform: translateY(30px) scale(.92); filter: blur(6px); }
-	to   { opacity: 1; transform: translateY(0) scale(1);     filter: blur(0);   }
-  }
-
-  .env-back {
-	position: absolute;
-	inset: 0;
-	background: linear-gradient(145deg, #8fa8c9, #6f8cb0);
-	border-radius: 8px;
-	box-shadow: 0 18px 50px rgba(0, 0, 0, .6);
-  }
-
-  .env-front {
-	position: absolute;
-	inset: 0;
-	background: linear-gradient(160deg, #b7c9e0, #98b0cf);
-	border-radius: 8px;
-	z-index: 3;
-	clip-path: polygon(0 0, 50% 42%, 100% 0, 100% 100%, 0 100%);
-	box-shadow: inset 0 -8px 18px rgba(0, 0, 0, .12);
-  }
-
-  .env-flap {
-	position: absolute;
-	top: 0; left: 0; right: 0;
-	height: 42%;
-	background: linear-gradient(180deg, #c4d4e8, #a3b9d6);
-	clip-path: polygon(0 0, 50% 100%, 100% 0);
-	transform-origin: top center;
-	transition: transform .9s cubic-bezier(.4, 0, .2, 1);
-	z-index: 4;
-	border-radius: 8px 8px 0 0;
-  }
-  .envelope.open .env-flap {
-	transform: rotateX(180deg);
-	z-index: 2;
-  }
-
-  .env-paper {
-	position: absolute;
-	left: 8%;
-	width: 84%;
-	height: 86%;
-	bottom: 7%;
-	background: linear-gradient(180deg, #fbf7ec, #f2ecdc);
-	border-radius: 4px;
-	z-index: 2;
-	box-shadow: 0 -2px 12px rgba(0, 0, 0, .15);
-	transition:
-	  transform 1.3s cubic-bezier(.22, .61, .36, 1) .35s,
-	  opacity .9s ease 1s;
-  }
-  .envelope.open .env-paper {
-	transform: translateY(-145%) rotate(-2.5deg);
-	opacity: 0;
-  }
-
-  .env-hint {
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 12px;
-	letter-spacing: .18em;
-	color: rgba(180, 210, 240, .55);
-	animation: hintPulse 2s ease-in-out infinite;
-	transition: opacity .3s ease;
-  }
-  @keyframes hintPulse {
-	0%, 100% { opacity: .45; }
-	50%      { opacity: .9;  }
-  }
-
-  /* ================= 第五页：文本编辑 ================= */
-  #pageEditor {
-	z-index: 8;
-	display: flex;
-	align-items: flex-start;
-	justify-content: center;
-	background: #000;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	overflow-y: auto;
-	-webkit-overflow-scrolling: touch;
-  }
-  #pageEditor.active { opacity: 1; visibility: visible; pointer-events: auto; }
-
-  .letter-editor {
-	width: min(520px, 90vw);
-	padding: 8vh 20px 10vh;
-	display: flex;
-	flex-direction: column;
-	gap: 18px;
-  }
-
-  .letter-to {
-	font-family: "STFangsong", "华文仿宋", "FangSong", "仿宋", serif;
-	font-size: 18px;
-	letter-spacing: .08em;
-	color: #ffffff;
-	text-shadow:
-	  0 0 10px rgba(170, 215, 255, .60),
-	  0 0 24px rgba(120, 175, 235, .30);
-	cursor: pointer;
-	user-select: none;
-	transition: opacity .25s ease;
-  }
-  .letter-to:hover { opacity: .75; }
-
-  #pageEditor.active .letter-to,
-  #pageVisitor.active .letter-to {
-	animation: letterToIn 1.4s cubic-bezier(.22, .61, .36, 1) both;
-  }
-  @keyframes letterToIn {
-	from { opacity: 0; transform: translateY(16px); filter: blur(6px); }
-	to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
-  }
-
-  .letter-textarea {
-	width: 100%;
-	min-height: 42vh;
-	background: rgba(16, 24, 38, .55);
-	border: 1px solid rgba(170, 210, 250, .22);
-	border-radius: 14px;
 	padding: 16px;
-	color: #e8f2ff;
-	font-family: "STFangsong", "华文仿宋", "FangSong", "仿宋", serif;
-	font-size: 15px;
-	line-height: 1.9;
-	letter-spacing: .04em;
-	resize: vertical;
-	outline: none;
-	transition: border-color .25s ease, box-shadow .25s ease;
-	-webkit-overflow-scrolling: touch;
-  }
-  .letter-textarea::placeholder { color: rgba(170, 200, 230, .32); }
-  .letter-textarea:focus {
-	border-color: rgba(180, 215, 255, .48);
-	box-shadow: 0 0 18px rgba(140, 190, 245, .18);
-  }
-
-  .letter-actions {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	flex-wrap: wrap;
-  }
-
-  .letter-btn {
-	padding: 8px 22px;
-	border-radius: 999px;
-	border: 1px solid rgba(160, 200, 240, .35);
-	background: linear-gradient(145deg, rgba(180, 212, 240, .92), rgba(127, 169, 207, .92));
-	color: #0b1220;
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 13px;
-	font-weight: 700;
-	letter-spacing: .16em;
-	cursor: pointer;
-	user-select: none;
-	transition: box-shadow .25s ease, transform .2s ease, filter .25s ease;
-  }
-  .letter-btn:hover {
-	box-shadow: 0 0 14px rgba(150, 200, 245, .55), 0 0 28px rgba(120, 170, 225, .28);
-	filter: brightness(1.05);
-  }
-  .letter-btn:active { transform: scale(.97); }
-
-  .letter-btn.ghost {
-	background: transparent;
-	color: rgba(210, 230, 250, .82);
-	border-color: rgba(160, 200, 240, .30);
-  }
-  .letter-btn.ghost:hover {
+	border-radius: 14px;
+	background: rgba(18,18,24,.6);
+	border: 1px solid rgba(255,255,255,.25);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
 	color: #fff;
-	box-shadow: 0 0 12px rgba(150, 200, 245, .25);
-	filter: none;
-  }
-
-  .letter-status {
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 12px;
-	letter-spacing: .08em;
-	color: rgba(150, 210, 180, .85);
-	opacity: 0;
-	transition: opacity .3s ease;
-  }
-  .letter-status.show { opacity: 1; }
-
-  /* ================= 第六页：访客展示 ================= */
-  #pageVisitor {
-	z-index: 8;
-	display: flex;
-	align-items: flex-start;
-	justify-content: center;
-	background: #000;
+	transform-origin: top right;
 	opacity: 0;
 	visibility: hidden;
-	pointer-events: none;
-	overflow-y: auto;
-	-webkit-overflow-scrolling: touch;
+	transform: translateY(-8px) scale(.95);
+	transition: opacity .26s ease, transform .26s ease, visibility .26s;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.4);
   }
-  #pageVisitor.active { opacity: 1; visibility: visible; pointer-events: auto; }
-
-  .letter-visitor {
-	width: min(520px, 90vw);
-	padding: 8vh 20px 12vh;
-	display: flex;
-	flex-direction: column;
-	gap: 22px;
-  }
-
-  .letter-content {
-	font-family: "STFangsong", "华文仿宋", "FangSong", "仿宋", serif;
-	font-size: 15px;
-	line-height: 1.9;
-	letter-spacing: .04em;
-	color: #eaf3ff;
-	white-space: pre-wrap;
-	word-break: break-word;
-	min-height: 60px;
-	text-shadow: 0 0 10px rgba(150, 200, 255, .22);
-  }
-
-  .letter-content.typing::after {
-	content: "▍";
-	color: rgba(180, 220, 255, .85);
-	animation: cursorBlink .85s step-end infinite;
-	margin-left: 1px;
-  }
-  @keyframes cursorBlink {
-	50% { opacity: 0; }
-  }
-
-  /* ===== 对方正在输入 ===== */
-  .typing-hint {
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 13px;
-	letter-spacing: .12em;
-	color: rgba(170, 200, 230, .55);
-	opacity: 0;
-	transition: opacity .45s ease;
-	user-select: none;
-	pointer-events: none;
-  }
-  .typing-hint.show { opacity: 1; }
-  .typing-hint .dots::after {
-	content: "";
-	animation: typingDots 1.2s steps(4, end) infinite;
-  }
-  @keyframes typingDots {
-	0%   { content: "";    }
-	25%  { content: ".";   }
-	50%  { content: "..";  }
-	75%  { content: "..."; }
-	100% { content: "";    }
-  }
-
-  /* ===== 访客页结尾签名 + 已收到 ===== */
-  .letter-sign {
-	font-family: "STFangsong", "华文仿宋", "FangSong", "仿宋", serif;
-	font-size: 13px;
-	letter-spacing: .08em;
-	color: rgba(200, 220, 240, .62);
-	text-align: right;
-	opacity: 0;
-	transform: translateY(8px);
-	transition: opacity .9s ease, transform .9s ease;
-	white-space: pre-wrap;
-	text-shadow: 0 0 8px rgba(150, 200, 255, .18);
-  }
-  .letter-sign.show { opacity: 1; transform: translateY(0); }
-
-  .read-btn-wrap {
-	display: flex;
-	justify-content: center;
-	opacity: 0;
-	transform: translateY(10px);
-	transition: opacity .8s ease, transform .8s ease;
-	pointer-events: none;
-  }
-  .read-btn-wrap.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-
-  .read-btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 9px 26px;
-	border-radius: 999px;
-	border: 1px solid rgba(160, 200, 240, .38);
-	background: rgba(143, 180, 214, .12);
-	color: #dbeaf8;
-	font-family: "FangSong", "仿宋", "STFangsong", serif;
-	font-size: 13px;
-	letter-spacing: .18em;
-	cursor: pointer;
-	user-select: none;
-	transition: background .25s ease, color .25s ease, box-shadow .25s ease, transform .2s ease, border-color .25s ease;
-  }
-  .read-btn:hover {
-	background: rgba(143, 180, 214, .26);
-	color: #fff;
-	box-shadow: 0 0 14px rgba(150, 200, 245, .45), 0 0 28px rgba(120, 170, 225, .22);
-  }
-  .read-btn:active { transform: scale(.97); }
-  .read-btn.done {
-	background: linear-gradient(145deg, rgba(180, 212, 240, .92), rgba(127, 169, 207, .92));
-	border-color: rgba(200, 230, 255, .85);
-	color: #0b1220;
-	font-weight: 700;
-	cursor: default;
-	box-shadow: 0 0 12px rgba(150, 200, 245, .55);
-  }
-  .read-btn.done:hover { transform: none; filter: none; }
-
-  /* ================= 新增：全页碎片消散 + 黑屏收尾 ================= */
-  #finale {
-	position: fixed;
-	inset: 0;
-	z-index: 12000;
-	background: #000;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0 24px;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	transition: opacity 1.6s ease, visibility 1.6s ease;
-  }
-  #finale.active {
+  .music-panel.open {
 	opacity: 1;
 	visibility: visible;
-	pointer-events: auto;
+	transform: translateY(0) scale(1);
   }
 
-  .finale-text {
-	font-family: "STFangsong", "华文仿宋", "FangSong", "仿宋", serif;
-	font-size: clamp(17px, 2.6vw, 24px);
-	letter-spacing: .22em;
-	line-height: 1.9;
-	color: #f4f9ff;
-	text-align: center;
+  .music-title {
+	font-size: 13px;
+	margin-bottom: 14px;
 	white-space: nowrap;
-	text-shadow:
-	  0 0 6px rgba(200, 230, 255, .75),
-	  0 0 18px rgba(140, 195, 255, .50),
-	  0 0 40px rgba(100, 155, 220, .30);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	opacity: 0.9;
+	text-align: center;
+	letter-spacing: 1px;
   }
-  .finale-text .ch {
-	display: inline-block;
+
+  .music-progress-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 14px;
+  }
+
+  .music-time {
+	font-size: 11px;
+	font-family: monospace;
+	opacity: 0.7;
+	min-width: 32px;
+	text-align: center;
+  }
+
+  #progressBar {
+	flex: 1;
+	height: 4px;
+	-webkit-appearance: none;
+	background: rgba(255,255,255,0.2);
+	border-radius: 2px;
+	outline: none;
+	cursor: pointer;
+  }
+  #progressBar::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 0 4px rgba(0,0,0,0.5);
+  }
+  #progressBar::-moz-range-thumb {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #fff;
+	border: none;
+	cursor: pointer;
+  }
+
+  .music-actions {
+	display: flex;
+	justify-content: center;
+  }
+
+  .music-play-btn {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: rgba(255,255,255,0.15);
+	border: 1px solid rgba(255,255,255,0.3);
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background 0.2s;
+  }
+  .music-play-btn:hover { background: rgba(255,255,255,0.3); }
+
+
+  /* ================= 页面通用 ================= */
+  .page{
+	position:fixed; inset:0; z-index:2;
+	opacity:0; pointer-events:none;
+	transition:opacity .9s ease;
+  }
+  .page.active{ opacity:1; pointer-events:auto; }
+
+  /* ================= 第一页 ================= */
+  #page1{
+	display:flex; flex-direction:column;
+	align-items:center; justify-content:center;
+  }
+  #page1 .line{
+	font-family:var(--fs);
+	font-size:14pt;
+	color:#fff;
+	letter-spacing:.16em;
+	text-shadow:0 2px 10px rgba(0,0,0,.55), 0 0 22px rgba(0,0,0,.35);
+  }
+  #page1 .line + .line{ margin-top:.7em; }
+  .line1{ animation: fadeIn 1.1s ease .5s both; }
+  .line2{ animation: fadeIn 1.1s ease 1.7s both; }
+  @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+
+  /* ================= 第二页 ================= */
+  #page2{
+	display:flex;
+	justify-content:center;
+	align-items:flex-start;
+	padding-top:5vh;
+	padding-bottom:8vh;
+	overflow-y:auto;
+	overflow-x:hidden;
+  }
+
+  .stack{
+	width:min(88vw, 520px);
+	display:flex;
+	flex-direction:column;
+	gap:16px;
+	transform-origin: center center;
+	transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .stack.vanish {
 	opacity: 0;
-	transform: translateY(10px);
-	filter: blur(4px);
-	transition: opacity 1.1s ease, transform 1.1s ease, filter 1.1s ease;
+	transform: scale(1.15) translateY(-20px);
+	filter: blur(15px);
+	pointer-events: none;
   }
-  .finale-text .ch.show {
+
+  /* ---------- 上方大卡片 ---------- */
+  .card{
+	--d: clamp(76px, 20vw, 140px);
+	--padL: 46px;
+	--gap: 26px;
+	position:relative;
+	width:100%;
+	height:252px;
+	border-radius:24px;
+	background:rgba(255,255,255,.12);
+	border:1px solid rgba(255,255,255,.28);
+	backdrop-filter:blur(10px);
+	-webkit-backdrop-filter:blur(10px);
+	box-shadow:0 16px 44px rgba(0,0,0,.3);
+	overflow:hidden;
+  }
+
+  /* ---------- 下方扁卡片 ---------- */
+  .bar{
+	position:relative;
+	width:100%;
+	height:74px;
+	border-radius:24px;
+	background:rgba(255,255,255,.12);
+	border:1px solid rgba(255,255,255,.28);
+	backdrop-filter:blur(10px);
+	-webkit-backdrop-filter:blur(10px);
+	box-shadow:0 12px 32px rgba(0,0,0,.25);
+	overflow:hidden;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	opacity:0;
+	transform:translateY(14px);
+	transition:opacity 1.1s ease, transform 1.1s cubic-bezier(.22,.9,.25,1);
+  }
+  .bar.show{ opacity:1; transform:translateY(0); }
+
+  .bar-text{
+	position:relative;
+	z-index:2;
+	font-family:var(--fs);
+	font-size:clamp(13px, 3.6vw, 19px);
+	letter-spacing:.14em;
+	text-indent:.14em;
+	color:#fff;
+	white-space:nowrap;
+	text-shadow:0 2px 10px rgba(0,0,0,.45);
+	padding:0 70px;
+  }
+
+  /* ---------- 双语文案 ---------- */
+  .quote {
+	text-align: center;
+	color: #fff;
+	margin-top: 4px;
+	opacity: 0;
+	transform: translateY(12px);
+	transition: opacity 1.2s ease, transform 1.2s cubic-bezier(.22,.9,.25,1);
+  }
+  .quote.show {
 	opacity: 1;
 	transform: translateY(0);
-	filter: blur(0);
+  }
+  .quote-cn {
+	font-family: var(--fs);
+	font-size: clamp(13px, 3.6vw, 16px);
+	letter-spacing: .15em;
+	text-indent: .15em;
+	text-shadow: 0 2px 10px rgba(0,0,0,.5);
+	margin-bottom: 6px;
+  }
+  .quote-en {
+	font-family: "Times New Roman", Times, var(--fs);
+	font-style: italic;
+	font-size: clamp(11px, 3vw, 14px);
+	letter-spacing: .05em;
+	opacity: .85;
+	text-shadow: 0 2px 10px rgba(0,0,0,.5);
   }
 
-  /* 全页碎片 / 灰尘粒子 */
-  .shatter-bit {
-	position: fixed;
+  /* ---------- 天使羽翼装饰 ---------- */
+  .wing{
+	position:absolute;
+	z-index:0;
+	pointer-events:none;
+	background-image: url('retouch_2026102415245268.png');
+	background-size: contain;
+	background-repeat: no-repeat;
+	opacity: 0.9; 
+  }
+  .wing-tr {
+	top: 0; right: 0;
+	width: 130px; height: 160px;
+	transform: rotate(10deg) translate(10px, -10px);
+	background-position: top right;
+  }
+  .wing-bl {
+	bottom: 0; left: 0;
+	width: 130px; height: 160px;
+	transform: rotate(190deg) translate(10px, -10px);
+	background-position: top right;
+  }
+  .bar .wing-tr { width: 90px; height: 110px; }
+  .bar .wing-bl { width: 90px; height: 110px; }
+
+  /* ---------- 交互区 ---------- */
+  .interactive-section {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	margin-top: 6px;
+  }
+
+  .divider {
+	width: 85%;
+	height: 1px;
+	background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+	margin: 0 auto 20px auto;
+	opacity: 0;
+	transition: opacity 1.5s ease;
+  }
+  .divider.show { opacity: 1; }
+
+  .tabs {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 40px;
+	height: 30px;
+	margin-bottom: 16px;
+	width: 100%;
+	transition: gap 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tabs.style-mode, 
+  .tabs.notice-mode {
+	gap: 0;
+  }
+
+  .tab-btn {
+	font-family: var(--fs);
+	font-size: 16px;
+	letter-spacing: 0.1em;
+	color: rgba(255,255,255,0.6);
+	cursor: pointer;
+	white-space: nowrap;
+	opacity: 0;
+	transform: translateY(10px);
+	transition: all 0.9s cubic-bezier(0.34, 1.2, 0.64, 1);
+	position: relative;
+	user-select: none;
+	width: 50px;
+	text-align: center;
+	line-height: 30px;
+  }
+
+  .tab-btn.show {
+	opacity: 1;
+	transform: translateY(0);
+  }
+
+  .tab-btn.active {
+	color: #fff;
+	font-weight: bold;
+	text-shadow: 0 0 10px rgba(255,255,255,0.8);
+  }
+  .tab-btn.active::after {
+	content: '';
+	position: absolute;
+	bottom: 0px; left: 10%;
+	width: 80%; height: 2px;
+	background: #fff;
+	border-radius: 2px;
+	box-shadow: 0 0 8px #fff;
+	animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes scaleIn { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  .tabs.style-mode .tab-btn#tabNotice,
+  .tabs.notice-mode .tab-btn#tabStyle {
+	opacity: 0;
 	pointer-events: none;
-	z-index: 11000;
-	will-change: transform, opacity, filter;
-	animation: shatterFly var(--dur, 1.6s) cubic-bezier(.22, .61, .36, 1) forwards;
+	transform: scale(0.7);
+	width: 0;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	transition: all 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tab-content {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	min-height: 260px;
+  }
+  .content-panel {
+	display: none;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+  }
+  .content-panel.active { display: flex; }
+
+  .role-row {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	width: 100%;
+  }
+  .label {
+	font-family: var(--hei);
+	font-size: 14px;
+	color: rgba(255,255,255,0.8);
+	margin-top: 4px;
+  }
+
+  .tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	justify-content: center;
+	max-width: 90%;
+  }
+
+  .tag {
+	font-family: var(--fs);
+	font-size: 13px;
+	color: #fff;
+	padding: 4px 12px;
+	background: rgba(255,255,255,0.1);
+	border: 1px solid rgba(255,255,255,0.25);
+	border-radius: 20px;
+	letter-spacing: 1px;
+	box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+	backdrop-filter: blur(4px);
+	opacity: 0;
+	--x: 0px;
+	transform: translateY(20px) translateX(var(--x));
+  }
+  .tag.show {
+	animation: floatUp 0.9s cubic-bezier(0.22, 0.9, 0.25, 1) forwards;
 	animation-delay: var(--delay, 0s);
   }
-  @keyframes shatterFly {
-	0%   { opacity: var(--o0, 1); transform: translate3d(0, 0, 0) rotate(0deg) scale(1); filter: blur(0); }
-	60%  { opacity: .55; }
-	100% { opacity: 0; transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--rot)) scale(var(--sc, .4)); filter: blur(6px); }
+  @keyframes floatUp {
+	0% { opacity: 0; transform: translateY(20px) translateX(var(--x)); }
+	50% { opacity: 1; transform: translateY(-4px) translateX(calc(var(--x) * 0.5)); }
+	100% { opacity: 1; transform: translateY(0) translateX(0); }
   }
 
-  .dust-bit {
+  .misc-text {
+	font-family: var(--fs);
+	font-size: 12px;
+	color: rgba(255,255,255,0.65);
+	letter-spacing: 2px;
+	margin-top: 4px;
+	opacity: 0;
+	transform: translateY(15px);
+  }
+  .misc-text.show {
+	animation: fadeUp 0.8s cubic-bezier(0.22, 0.9, 0.25, 1) 0.7s forwards;
+  }
+
+  .notice-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	width: 100%;
+	padding: 0 10px;
+	margin-top: 4px;
+  }
+  .notice-item {
+	font-family: var(--fs);
+	font-size: clamp(12px, 3vw, 14px);
+	color: rgba(255,255,255,0.92);
+	letter-spacing: 0.05em;
+	line-height: 1.6;
+	text-align: left;
+	opacity: 0;
+	transform: translateY(15px);
+  }
+  .notice-item.show {
+	animation: fadeUp 0.6s ease forwards;
+	animation-delay: var(--delay, 0s);
+  }
+  @keyframes fadeUp {
+	from { opacity: 0; transform: translateY(15px); }
+	to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- 认识我 按钮 --- */
+  .meet-btn{
+	position:absolute;
+	z-index:3;
+	left:50%; top:50%;
+	padding:11px 32px;
+	border-radius:999px;
+	border:1px solid rgba(255,255,255,.65);
+	background:rgba(255,255,255,.16);
+	backdrop-filter:blur(6px);
+	-webkit-backdrop-filter:blur(6px);
+	color:#fff;
+	font-family:var(--fs);
+	font-size:15pt;
+	letter-spacing:.18em;
+	text-indent:.18em;
+	cursor:pointer;
+	white-space:nowrap;
+	opacity:0;
+	pointer-events:none;
+	transform:translate(-50%,-50%) translateY(var(--rise, 40px));
+	transition:background .25s ease;
+  }
+  .meet-btn:hover{ background:rgba(255,255,255,.3); }
+  .meet-btn.reveal{
+	pointer-events:auto;
+	animation: riseIn .95s cubic-bezier(.22,.9,.25,1) var(--delay,0s) forwards;
+  }
+  @keyframes riseIn{
+	from{ opacity:0; transform:translate(-50%,-50%) translateY(var(--rise, 40px)) scale(.92); }
+	to{ opacity:1; transform:translate(-50%,-50%) translateY(0) scale(1); }
+  }
+  .meet-btn.reveal.dissolve{
+	animation: dissolve .65s ease forwards;
+  }
+  @keyframes dissolve{
+	0%{ opacity:1; transform:translate(-50%,-50%) translateY(0) scale(1); filter:blur(0); }
+	100%{ opacity:0; transform:translate(-50%,-50%) translateY(-30px) scale(1.3); filter:blur(12px); }
+  }
+
+  /* --- 圆形头像 --- */
+  .circle{
+	position:absolute;
+	z-index:3;
+	top:50%; left:50%;
+	width:var(--d); height:var(--d);
+	margin-left:calc(var(--d) / -2);
+	margin-top:calc(var(--d) / -2);
+	border-radius:50%;
+	background-image: url('com.xingin.xhs_20261024122005.png');
+	background-size: cover; 
+	background-position: center; 
+	background-repeat: no-repeat;
+	box-shadow:0 0 30px rgba(255,255,255,.5), inset 0 0 18px rgba(255,255,255,.55);
+	opacity:0; pointer-events:none; transform:scale(.75);
+	cursor:default;
+	transition: opacity .75s ease, transform .9s cubic-bezier(.22,.9,.25,1), left .9s cubic-bezier(.22,.9,.25,1);
+  }
+  .circle.show{
+	opacity:1; transform:scale(1); pointer-events:auto;
+  }
+  .circle.move{
+	left:calc(var(--padL) + var(--d) / 2);
+  }
+
+  /* --- 右侧文字信息 --- */
+  .info{
+	position:absolute;
+	z-index:3;
+	top:50%;
+	left:calc(var(--padL) + var(--d) + var(--gap));
+	right:26px;
+	transform:translateY(-50%);
+	display:flex; flex-direction:column; gap:5px;
+	align-items:center; text-align:center; pointer-events:none;
+  }
+  .info > *{ opacity:0; }
+  .info .name{
+	font-family:var(--hei); font-weight:700;
+	font-size:clamp(24px, 5.6vw, 34px);
+	letter-spacing:.1em; line-height:1.15;
+	color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.45);
+  }
+  .info .meta{
+	font-family:var(--fs); font-size:clamp(12px, 3.2vw, 15px);
+	letter-spacing:.08em; line-height:1.45;
+	color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.45);
+	white-space:nowrap;
+  }
+  .info.show > *{ animation: riseText .85s cubic-bezier(.22,.9,.25,1) both; }
+  .info.show > *:nth-child(1){ animation-delay:0s; }
+  .info.show > *:nth-child(2){ animation-delay:.16s; }
+  .info.show > *:nth-child(3){ animation-delay:.32s; }
+  .info.show > *:nth-child(4){ animation-delay:.48s; }
+  @keyframes riseText{
+	from{ opacity:0; transform:translateY(20px); }
+	to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ================= 点击雪花 ================= */
+  .snow{
+	position:fixed; z-index:9999;
+	color:#fff; pointer-events:none; line-height:1;
+	text-shadow:0 0 10px rgba(255,255,255,.95);
+	will-change:transform, opacity;
+  }
+
+  /* ================= 右下角箭头 ================= */
+  .arrow-next {
 	position: fixed;
+	bottom: 30px;
+	right: 30px;
+	width: 56px;
+	height: 56px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
 	border-radius: 50%;
-	background: #d8ecff;
+	background: rgba(255,255,255,0.1);
+	border: 1px solid rgba(255,255,255,0.3);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateX(-20px);
+	transition: all 0.6s cubic-bezier(0.22, 0.9, 0.25, 1);
+	z-index: 100;
+	color: #fff;
+	font-family: sans-serif;
+  }
+  .arrow-next svg {
+	width: 24px;
+	height: 24px;
+	stroke: currentColor;
+	stroke-width: 2;
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	transition: transform 0.3s ease;
+  }
+  .arrow-next.show {
+	opacity: 1;
+	visibility: visible;
+	transform: translateX(0);
+	box-shadow: 0 0 15px rgba(255,255,255,0.15);
+  }
+  .arrow-next:hover {
+	background: rgba(255,255,255,0.25);
+	box-shadow: 0 0 25px rgba(255,255,255,0.3);
+  }
+  .arrow-next:hover svg {
+	transform: translateX(4px);
+  }
+
+  /* ================= 最终文字页面 ================= */
+  .final-screen {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	z-index: 10;
 	pointer-events: none;
-	z-index: 11000;
-	will-change: transform, opacity;
-	animation: dustFly var(--dur, 2s) ease-out forwards;
-	animation-delay: var(--delay, 0s);
+	opacity: 0;
+	transition: opacity 1.5s ease;
   }
-  @keyframes dustFly {
-	0%   { opacity: .9; transform: translate3d(0, 0, 0) scale(1); }
-	100% { opacity: 0;  transform: translate3d(var(--dx), var(--dy), 0) scale(.2); }
+  .final-screen.show {
+	opacity: 1;
+	pointer-events: auto;
+	cursor: pointer;
+  }
+  .final-text-1 {
+	font-family: var(--fs);
+	font-size: clamp(16px, 4vw, 22px);
+	letter-spacing: 0.1em;
+	color: #fff;
+	text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+	opacity: 0;
+	transform: translateY(20px);
+	transition: all 1.5s cubic-bezier(0.22, 0.9, 0.25, 1);
+	text-align: center;
+	padding: 0 20px;
+  }
+  .final-text-2 {
+	font-family: var(--hei);
+	font-weight: bold;
+	font-size: clamp(24px, 6vw, 36px);
+	letter-spacing: 0.2em;
+	margin-top: 30px;
+	color: #fff;
+	text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+	opacity: 0;
+	transform: translateY(20px);
+	transition: all 1.5s cubic-bezier(0.22, 0.9, 0.25, 1);
+  }
+  .final-screen.show .final-text-1 {
+	opacity: 1;
+	transform: translateY(0);
+  }
+  .final-screen.show .final-text-2 {
+	opacity: 1;
+	transform: translateY(0);
+	transition-delay: 1.5s;
   }
 
-  .visitor-shatter-out {
-	animation: visitorOut 1.3s cubic-bezier(.4, 0, .2, 1) forwards;
-	pointer-events: none;
-  }
-  @keyframes visitorOut {
-	0%   { opacity: 1; filter: blur(0);    transform: scale(1); }
-	55%  { opacity: .6; filter: blur(2.5px); transform: scale(1.012); }
-	100% { opacity: 0; filter: blur(18px);  transform: scale(1.03); }
-  }
-
-  @media (max-width: 480px) {
-	.player { gap: 14px; padding: 16px; border-radius: 24px; }
-	.cover { width: 72px; height: 72px; border-radius: 14px; }
-	.song-title { font-size: 15px; }
-
-	.greeting { gap: 18px; }
-	.greet-text { font-size: 16px; letter-spacing: .08em; }
-	.greet-name { font-size: 2em; letter-spacing: .04em; }
-
-	.datetime-row { gap: 14px; }
-	.clock { font-size: 14px; letter-spacing: .04em; }
-	.date  { font-size: 14px; letter-spacing: .04em; }
-	.clock-label { font-size: 9px; letter-spacing: .14em; }
-
-	.song-chip { font-size: 11px; padding: 5px 12px; }
-	.playlist-label { font-size: 10px; }
-
-	.toast-item { padding: 9px 12px; border-radius: 14px; gap: 9px; }
-	.toast-icon { width: 30px; height: 30px; font-size: 15px; border-radius: 9px; }
-	.toast-name { font-size: 12px; }
-	.toast-msg { font-size: 12px; }
-
-	#musicFab { width: 40px; height: 40px; top: 12px; right: 12px; }
-	#musicFab svg { width: 19px; height: 19px; }
-
-	.key-card { padding: 26px 20px 24px; border-radius: 20px; }
-	.key-title { font-size: 17px; }
-
-	.envelope { width: 220px; height: 144px; }
-
-	.letter-textarea { min-height: 38vh; font-size: 14px; }
-	.letter-content { font-size: 14px; }
-	.letter-sign { font-size: 12px; }
-	.read-btn { font-size: 12px; padding: 8px 20px; }
-
-	.finale-text { letter-spacing: .14em; white-space: normal; }
+  /* ================= 小屏适配 ================= */
+  @media (max-width:480px){
+	#page2{ padding-top:3vh; }
+	.stack{ width:92vw; gap:12px; }
+	.card{
+	  --d: clamp(68px, 18vw, 92px); --padL: 32px; --gap: 18px;
+	  height:214px; border-radius:20px;
+	}
+	.bar{ height:62px; border-radius:20px; }
+	.bar-text{ padding:0 50px; }
+	
+	.wing-tr { width: 90px; height: 110px; }
+	.wing-bl { width: 90px; height: 110px; }
+	.bar .wing-tr { width: 60px; height: 75px; }
+	.bar .wing-bl { width: 60px; height: 75px; }
+	
+	.meet-btn{ padding:10px 26px; font-size:14pt; }
+	
+	.music-widget { top: 16px; right: 16px; }
+	.music-ctrl { width: 42px; height: 42px; }
+	.music-panel { width: 240px; padding: 12px; }
+	
+	.quote { margin-top: 0px; }
+	.tabs { gap: 30px; margin-bottom: 12px; }
+	.tab-btn { font-size: 15px; }
+	.tab-content { min-height: 230px; }
+	.notice-list { gap: 10px; }
+	
+	.arrow-next { width: 46px; height: 46px; bottom: 20px; right: 20px; }
+	.arrow-next svg { width: 20px; height: 20px; }
   }
 </style>
- </head>
- <body>
-  <!-- ==================== 全局返回按钮（5px 箭头） ==================== -->
-  <button id="backBtn" title="返回上一页">←</button>
-  <!-- ==================== 第一页 ==================== -->
-  <div id="page1" class="page-layer">
-   <div id="snow-layer"></div>
-   <div class="center">
-	<h1 class="title" id="title">过程就是奖励，原本我们毫无交集</h1>
-	<div class="progress-wrap" id="progressWrap">
-	 <div class="progress-num" id="progressNum">0%</div>
-	 <div class="progress-track">
-	  <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-	 </div>
+</head>
+<body>
+
+  <!-- 音频文件 -->
+  <audio id="bgAudio" src="Promise of a hundred years.mp3" loop preload="auto"></audio>
+
+  <!-- 背景图片 -->
+  <div id="bgLayer"></div>
+
+  <!-- 右上角音乐组件 -->
+  <div class="music-widget">
+	<div class="music-ctrl" id="musicCtrl" title="音乐播放器">
+	  <svg viewBox="0 0 24 24">
+		<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+	  </svg>
 	</div>
-	<div class="enter-btn" id="enterBtn">Enter·进入</div>
-   </div>
-  </div>
-  <!-- ==================== 第二页 ==================== -->
-  <div id="page2" class="page-layer">
-   <div class="page-inner">
-	<div class="content-col">
-	 <div class="player">
-	  <div class="cover" id="cover">
-	   <img src="./com.xingin.xhs_20261021222051.png" alt="音乐封面" onerror="this.style.display='none';this.parentNode.textContent='♪';">
+	
+	<!-- 展开的控制面板 -->
+	<div class="music-panel" id="musicPanel">
+	  <div class="music-title">Promise of a hundred years</div>
+	  <div class="music-progress-row">
+		<span class="music-time" id="currentTime">00:00</span>
+		<input type="range" id="progressBar" value="0" min="0" max="100">
+		<span class="music-time" id="duration">00:00</span>
 	  </div>
-	  <div class="info">
-	   <div class="song-title" id="songTitle">is it 2 far？</div>
-	   <div class="artist" id="artist">Vincentz</div>
-	   <div class="progress" id="progressBar">
-		<div class="progress-fill" id="playerProgress" style="width: 9.8%;"></div>
-	   </div>
-	   <div class="time-row">
-		<span id="currentTime">0:17</span> <span id="totalTime">3:00</span>
-	   </div>
-	   <div class="controls">
-		<button class="ctrl side" id="prevBtn" title="上一首">
-		 <svg viewBox="0 0 24 24" width="14" height="14">
-		  <path d="M6 5h2v14H6zM20 5v14L9 12z" fill="currentColor"></path>
-		 </svg>
-		</button>
-		<button class="ctrl play" id="playBtn" title="暂停">
-		 <svg viewBox="0 0 24 24" width="18" height="18">
-		  <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
-		 </svg>
-		</button>
-		<button class="ctrl side" id="nextBtn" title="下一首">
-		 <svg viewBox="0 0 24 24" width="14" height="14">
-		  <path d="M16 5h2v14h-2zM4 5v14l11-7z" fill="currentColor"></path>
-		 </svg>
-		</button>
-	   </div>
-	   <div class="playlist-bar">
-		<span class="playlist-label">歌单</span>
-		<div class="playlist" id="playlist">
-		 <button type="button" class="song-chip active" title="is it 2 far？">
-		  <svg class="chip-icon" viewBox="0 0 24 24" width="11" height="11">
-		   <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" fill="currentColor"></path>
-		  </svg>
-		  <span class="chip-text">is it 2 far？</span>
-		 </button>
+	  <div class="music-actions">
+		<button class="music-play-btn" id="playPauseBtn" type="button">▶</button>
+	  </div>
+	</div>
+  </div>
+
+  <!-- ================= 第一页 ================= -->
+  <section class="page active" id="page1">
+	<div class="line line1">您好</div>
+	<div class="line line2">初次见面</div>
+  </section>
+
+  <!-- ================= 第二页 ================= -->
+  <section class="page" id="page2">
+	<div class="stack" id="stack">
+
+	  <!-- 上方大卡片 -->
+	  <div class="card">
+		<div class="wing wing-tr"></div>
+		<div class="wing wing-bl"></div>
+
+		<button class="meet-btn" id="meetBtn">认识我</button>
+
+		<div class="circle" id="circle"></div>
+
+		<div class="info" id="info">
+		  <div class="name">余悸</div>
+		  <div class="meta">19/女/le</div>
+		  <div class="meta">摩羯</div>
+		  <div class="meta">intj</div>
 		</div>
-	   </div>
 	  </div>
-	 </div>
-	 <div class="greeting">
-	  <div class="greet-text">
-	   <span class="greet-name">肆柒</span>
-	   <br>
-	   生日快乐。
+
+	  <!-- 下方扁卡片 -->
+	  <div class="bar" id="bar">
+		<div class="wing wing-tr"></div>
+		<div class="wing wing-bl"></div>
+		<span class="bar-text">常驻：耳努/耳正</span>
 	  </div>
-	  <div class="datetime-row">
-	   <div class="clock-wrap">
-		<span class="clock-label">北京时间</span> <span class="clock" id="clock">03:18:45</span>
-	   </div>
-	   <div class="date-wrap">
-		<span class="clock-label">日期</span> <span class="date" id="date">2026年10月22日</span>
-	   </div>
+
+	  <!-- 底部双语文案 -->
+	  <div class="quote" id="quote">
+		<div class="quote-cn">回忆，是另一种永远的拥有</div>
+		<div class="quote-en">Memories are another kind of eternal possession.</div>
 	  </div>
-	 </div>
-	 <div id="toastArea" class="toast-area"></div>
+
+	  <!-- 交互区域 -->
+	  <div class="interactive-section">
+		<div class="divider" id="divider"></div>
+		
+		<div class="tabs" id="tabs">
+		  <span class="tab-btn" id="tabStyle">风格</span>
+		  <span class="tab-btn" id="tabNotice">须知</span>
+		</div>
+
+		<div class="tab-content">
+		  <!-- 风格展开内容 -->
+		  <div class="content-panel" id="styleContent">
+			<div class="role-row">
+			  <span class="label">主：</span>
+			  <div class="tags">
+				<span class="tag" style="--delay: 0s; --x: -20px;">温柔治愈</span>
+				<span class="tag" style="--delay: 0.15s; --x: 30px;">逻辑引导</span>
+				<span class="tag" style="--delay: 0.3s; --x: -10px;">轻钓系</span>
+				<span class="tag" style="--delay: 0.45s; --x: 25px;">日常</span>
+			  </div>
+			</div>
+			<div class="role-row" style="margin-top: 8px;">
+			  <span class="label">副：</span>
+			  <div class="tags">
+				<span class="tag" style="--delay: 0.6s; --x: -15px;">妹感</span>
+			  </div>
+			</div>
+			<div class="role-row" style="margin-top: 10px;">
+			  <span class="misc-text">其余随机掉落</span>
+			</div>
+		  </div>
+
+		  <!-- 须知展开内容 -->
+		  <div class="content-panel" id="noticeContent">
+			<div class="notice-list">
+			  <div class="notice-item" style="--delay: 0.05s;">1、欢迎真诚互动，拒绝高高在上的考官式单，尊重是互相的。</div>
+			  <div class="notice-item" style="--delay: 0.2s;">2、边界感分明，不接擦边，婉拒无脑冷暴力。</div>
+			  <div class="notice-item" style="--delay: 0.35s;">3、请提前告知喜好雷点。</div>
+			  <div class="notice-item" style="--delay: 0.5s;">4、故意找茬挑刺等，原谅我暂时无法胜任。</div>
+			  <div class="notice-item" style="--delay: 0.65s;">5、取单请至少提前30min告知。</div>
+			  <div class="notice-item" style="--delay: 0.8s;">6、感谢相遇，期待你能在这里得到放松。</div>
+			</div>
+		  </div>
+		</div>
+	  </div>
+
 	</div>
-   </div>
+  </section>
+
+  <!-- 右下角箭头 -->
+  <div class="arrow-next" id="arrowNext">
+	<svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
   </div>
-  <!-- ==================== 第三页：密钥验证 ==================== -->
-  <div id="pageKey" class="page-layer">
-   <div class="key-card">
-	<div class="key-title">请输入密钥</div>
-	<div class="key-error" id="keyError">密码错误，请重新输入...</div>
-	<input type="password" id="keyInput" class="key-input" placeholder="在此输入密钥" autocomplete="off" spellcheck="false">
-	<button type="button" id="keySubmit" class="key-submit">确认</button>
-   </div>
+
+  <!-- 最后寄语页面 -->
+  <div class="final-screen" id="finalScreen">
+	<div class="final-text-1">-就算是过路人，我也想在你这里留下最深的脚印-</div>
+	<div class="final-text-2">感谢相遇</div>
   </div>
-  <!-- ==================== 第四页：信封动画 ==================== -->
-  <div id="pageEnvelope" class="page-layer">
-   <div class="envelope-scene">
-	<div class="envelope" id="envelope">
-	 <div class="env-back"></div>
-	 <div class="env-paper"></div>
-	 <div class="env-front"></div>
-	 <div class="env-flap"></div>
-	</div>
-	<div class="env-hint" id="envHint">点击封口打开</div>
-   </div>
-  </div>
-  <!-- ==================== 第五页：文本编辑 ==================== -->
-  <div id="pageEditor" class="page-layer">
-   <div class="letter-editor">
-	<div class="letter-to" id="editorTo" title="点击返回首页">To：陈伶</div>
-	<textarea id="letterText" class="letter-textarea" spellcheck="false"></textarea>
-	<div class="letter-actions">
-	 <button type="button" id="letterSave" class="letter-btn">保存</button>
-	 <button type="button" id="letterUndo" class="letter-btn ghost">撤销</button>
-	 <button type="button" id="letterPerm" class="letter-btn">永久保存</button>
-	 <span id="letterStatus" class="letter-status"></span>
-	</div>
-   </div>
-  </div>
-  <!-- ==================== 第六页：访客展示 ==================== -->
-  <div id="pageVisitor" class="page-layer">
-   <div class="letter-visitor">
-	<div class="letter-to" id="visitorTo" title="点击返回首页">To：陈伶</div>
-	<div class="typing-hint" id="typingHint"><span class="dots"></span></div>
-	<div class="letter-content" id="visitorContent"></div>
-	<div class="letter-sign" id="visitorSign"></div>
-	<div class="read-btn-wrap" id="readBtnWrap">
-	 <button type="button" class="read-btn" id="readBtn">♡ 我收到了</button>
-	</div>
-   </div>
-  </div>
-  <!-- ==================== 第七页：黑屏收尾 ==================== -->
-  <div id="finale">
-   <div class="finale-text" id="finaleText"></div>
-  </div>
-  <!-- ==================== 右上角音乐控制按钮（第一页隐藏） ==================== -->
-  <div id="musicFab" title="播放 / 暂停" style="display: none;" class="playing">
-   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-	<path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"></path>
-   </svg>
-  </div>
-  <script>
-(function () {
-  'use strict';
 
-  /* ==================================================
-	 0. 元素引用
-	 ================================================== */
-  const page1        = document.getElementById('page1');
-  const page2        = document.getElementById('page2');
-  const pageKey      = document.getElementById('pageKey');
-  const pageEnvelope = document.getElementById('pageEnvelope');
-  const pageEditor   = document.getElementById('pageEditor');
-  const pageVisitor  = document.getElementById('pageVisitor');
-  const finale       = document.getElementById('finale');
-  const finaleText   = document.getElementById('finaleText');
+<script>
+/* ================== 音乐播放器逻辑 ================== */
+const bgAudio = document.getElementById('bgAudio');
+const musicCtrl = document.getElementById('musicCtrl');
+const musicPanel = document.getElementById('musicPanel');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const progressBar = document.getElementById('progressBar');
+const currentTimeEl = document.getElementById('currentTime');
+const durationEl = document.getElementById('duration');
 
-  const titleEl      = document.getElementById('title');
-  const progressWrap = document.getElementById('progressWrap');
-  const fillEl       = document.getElementById('progressFill');
-  const numEl        = document.getElementById('progressNum');
-  const enterBtn     = document.getElementById('enterBtn');
-  const musicFab     = document.getElementById('musicFab');
-  const backBtn      = document.getElementById('backBtn');
+let userPaused = false;
 
-  const toastArea    = document.getElementById('toastArea');
-  const keyInput     = document.getElementById('keyInput');
-  const keySubmit    = document.getElementById('keySubmit');
-  const keyError     = document.getElementById('keyError');
-  const keyCard      = document.querySelector('.key-card');
-  const letterText   = document.getElementById('letterText');
-  const letterSave   = document.getElementById('letterSave');
-  const letterUndo   = document.getElementById('letterUndo');
-  const letterPerm   = document.getElementById('letterPerm');
-  const letterStatus = document.getElementById('letterStatus');
-  const editorToEl   = document.getElementById('editorTo');
-  const visitorToEl  = document.getElementById('visitorTo');
-  const visitorContent = document.getElementById('visitorContent');
+// 格式化时间
+function formatTime(seconds) {
+  if (isNaN(seconds) || seconds === Infinity) return '00:00';
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
 
-  /* 访客页余韵元素 */
-  const typingHint   = document.getElementById('typingHint');
-  const visitorSign  = document.getElementById('visitorSign');
-  const readBtnWrap  = document.getElementById('readBtnWrap');
-  const readBtn      = document.getElementById('readBtn');
-
-  /* 导航 / 打字机 / 弹窗状态 */
-  let navSeq = 0;
-  let visitorTypeSeq = 0;
-  let toastStarted = false;
-
-  /* 收尾状态 */
-  let finaleRunning = false;
-
-  /* ==================================================
-	 0.1 联系人配置
-	 ================================================== */
-  const EDIT_PASS = '0000';
-
-  /* @DEFAULT_LETTERS_START */
-const DEFAULT_LETTERS = {
-  "chenling": "to签出现！\n是一个突发奇想的设计呀。可以点击进入信息弹窗查看我给你们每个人留下的一段话。(๑• . •๑)\n嘻嘻。\n怎么样？不错吧。\n(๑>؂<๑）\n给你寄的东西已经收到了吧～嘿嘿\n零食好吃不？和你们那的是一个味吗？\n也不知道我买的对不对（*思考\n悄悄话结束。接下来才是正经话。！\n\n遇见你是一件超级幸运的事哦！\n我的亲亲固玩⁃̀⩊⁃́",
-  "chenjiu": "hi沉柩！\n这是我们一起度过的第一个生日！\n值得纪念的一天nia哈哈哈！\n\n寿星祝你天天开心哦！🎉",
-  "heshibi": "",
-  "ayu": ""
-};
-/* @DEFAULT_LETTERS_END */
-
-  const CONTACTS = [
-	{
-	  key:       'chenling',
-	  signer:    '亲亲固玩_陈伶( ‵▽′)ψ',
-	  shortName: '陈伶',
-	  wish:      '生日快乐呀，肆柒',
-	  avatar:    './mmexport1792582596946.jpg',
-	  toTitle:   'To：陈伶',
-	  viewPass:  '0407',
-	  letterKey: 'bday_letter_chenling_v1',
-	  draftKey:  'bday_letter_draft_chenling_v1'
-	},
-	{
-	  key:       'chenjiu',
-	  signer:    '沉柩柩',
-	  shortName: '沉柩',
-	  wish:      '肆柒生日快乐！',
-	  avatar:    './mmexport1792582611626.jpg',
-	  toTitle:   'To：沉柩',
-	  viewPass:  '0705',
-	  letterKey: 'bday_letter_chenjiu_v1',
-	  draftKey:  'bday_letter_draft_chenjiu_v1'
-	},
-	{
-	  key:       'heshibi',
-	  signer:    '和氏璧',
-	  shortName: '佳钰',
-	  wish:      '47生日快乐呀🎉',
-	  avatar:    './mmexport1792582624346.jpg',
-	  toTitle:   'To：佳钰',
-	  viewPass:  '0409',
-	  letterKey: 'bday_letter_heshibi_v1',
-	  draftKey:  'bday_letter_draft_heshibi_v1'
-	},
-	{
-	  key:       'ayu',
-	  signer:    '阿羽',
-	  shortName: '阿羽',
-	  wish:      '47生日快乐奥！',
-	  avatar:    './mmexport1792582633218.jpg',
-	  toTitle:   'To：阿羽',
-	  viewPass:  '0410',
-	  letterKey: 'bday_letter_ayu_v1',
-	  draftKey:  'bday_letter_draft_ayu_v1'
-	}
-  ];
-
-  let currentContact = null;
-  let keyEntering = false;
-  let keyUnlocked = false;
-
-  /* ==================================================
-	 1. 全局返回按钮
-	 ================================================== */
-  function getCurrentLayer() {
-	if (finale.classList.contains('active'))        return 'finale';
-	if (pageEditor.classList.contains('active'))   return 'editor';
-	if (pageVisitor.classList.contains('active'))  return 'visitor';
-	if (pageEnvelope.classList.contains('active')) return 'envelope';
-	if (pageKey.classList.contains('active'))      return 'key';
-	if (page2.classList.contains('active'))        return 'main';
-	return 'home';
+// 尝试自动播放（页面加载时、或用户首次点击页面时）
+function tryPlayAudio() {
+  if (userPaused) return;
+  if (!bgAudio.paused) return;
+  
+  const p = bgAudio.play();
+  if (p !== undefined) {
+	p.catch(() => { /* 忽略浏览器拦截报错，等待首次手势 */ });
   }
+}
 
-  backBtn.addEventListener('click', function () {
-	const cur = getCurrentLayer();
-	if (cur === 'home') return;
+// 页面加载立刻尝试
+tryPlayAudio();
 
-	/* 收尾页：直接回首页 */
-	if (cur === 'finale') {
-	  closeFinale();
-	  backToHome();
-	  return;
-	}
+// 用户第一次点击屏幕任意处，强制冲破浏览器的自动播放限制
+document.addEventListener('mousedown', tryPlayAudio, { once: true });
+document.addEventListener('touchstart', tryPlayAudio, { once: true });
+document.addEventListener('click', tryPlayAudio, { once: true });
 
-	if (page2.classList.contains('sand-out')) {
-	  navSeq++;
-	  page2.classList.remove('sand-out');
-	  keyEntering = false;
-	  currentContact = null;
-	  resumeToastLoop();
-	  return;
-	}
-
-	if (cur === 'main') { backToFirstPage(); return; }
-	backToHome();
-  });
-
-  /* ==================================================
-	 2. 雪花
-	 ================================================== */
-  const SNOW_SRC = './雪花.jpg';
-  const FLAKE_COUNT = 20;
-  const snowLayer = document.getElementById('snow-layer');
-
-  function fallbackSnowflake() {
-	const c = document.createElement('canvas');
-	c.width = c.height = 64;
-	const ctx = c.getContext('2d');
-	ctx.translate(32, 32);
-	ctx.strokeStyle = '#ffffff';
-	ctx.lineWidth = 3;
-	ctx.lineCap = 'round';
-	for (let i = 0; i < 6; i++) {
-	  ctx.rotate(Math.PI / 3);
-	  ctx.beginPath(); ctx.moveTo(0, 0);   ctx.lineTo(0, -26); ctx.stroke();
-	  ctx.beginPath(); ctx.moveTo(0, -13); ctx.lineTo(-8, -19); ctx.stroke();
-	  ctx.beginPath(); ctx.moveTo(0, -13); ctx.lineTo(8, -19);  ctx.stroke();
-	}
-	return c.toDataURL();
+// 1. 点击右上角 UI：展开/收起面板，并顺便尝试播放
+musicCtrl.addEventListener('click', (e) => {
+  e.stopPropagation();
+  musicPanel.classList.toggle('open');
+  
+  // 如果用户点开 UI 时音乐还没开始，尝试播放
+  if (bgAudio.paused) {
+	userPaused = false;
+	bgAudio.play().catch(()=>{});
   }
+});
 
-  function createFlakes(src) {
-	for (let i = 0; i < FLAKE_COUNT; i++) {
-	  const img = document.createElement('img');
-	  img.className = 'snowflake';
-	  img.src = src;
-	  img.alt = '';
-
-	  const size     = 12 + Math.random() * 30;
-	  const opacity  = 0.30 + Math.random() * 0.65;
-	  const duration = 11 + Math.random() * 10;
-
-	  img.style.left   = (Math.random() * 100) + 'vw';
-	  img.style.width  = size.toFixed(1) + 'px';
-	  img.style.height = 'auto';
-	  img.style.opacity = opacity.toFixed(2);
-	  img.style.animationDuration = duration.toFixed(2) + 's';
-	  img.style.animationDelay = (-Math.random() * duration).toFixed(2) + 's';
-
-	  img.style.setProperty('--drift', (Math.random() * 160 - 80).toFixed(0) + 'px');
-	  img.style.setProperty('--spin',  (Math.random() * 720 - 360).toFixed(0) + 'deg');
-
-	  snowLayer.appendChild(img);
-	}
+// 点击页面外部关闭面板
+document.addEventListener('click', (e) => {
+  if (!musicPanel.contains(e.target) && !musicCtrl.contains(e.target)) {
+	musicPanel.classList.remove('open');
   }
+});
 
-  const probe = new Image();
-  probe.onload  = () => createFlakes(SNOW_SRC);
-  probe.onerror = () => createFlakes(fallbackSnowflake());
-  probe.src = SNOW_SRC;
-
-  /* ==================================================
-	 3. 进度条
-	 ================================================== */
-  const TOTAL        = 5000;
-  const APPEAR_DELAY = 1700;
-  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
-
-  setTimeout(startLoading, APPEAR_DELAY);
-
-  function startLoading() {
-	const startTime = performance.now();
-
-	function tick(now) {
-	  const t = Math.min((now - startTime) / TOTAL, 1);
-	  const p = easeOutCubic(t);
-
-	  fillEl.style.width = (p * 100).toFixed(2) + '%';
-	  numEl.textContent  = Math.round(p * 100) + '%';
-
-	  if (t < 1) {
-		requestAnimationFrame(tick);
-	  } else {
-		fillEl.style.width = '100%';
-		numEl.textContent  = '100%';
-		setTimeout(() => enterBtn.classList.add('show'), 350);
-	  }
-	}
-	requestAnimationFrame(tick);
+// 2. 点击面板里的 播放/暂停 按钮
+playPauseBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (bgAudio.paused) {
+	userPaused = false;
+	bgAudio.play().catch(()=>{});
+  } else {
+	userPaused = true;
+	bgAudio.pause();
   }
+});
 
-  /* ==================================================
-	 4. 进入第二页
-	 ================================================== */
-  let leaving = false;
+// 3. 进度条与时间更新
+bgAudio.addEventListener('loadedmetadata', () => {
+  durationEl.textContent = formatTime(bgAudio.duration);
+});
 
-  enterBtn.addEventListener('click', function (e) {
-	e.stopPropagation();
-	if (leaving) return;
-	leaving = true;
-
-	titleEl.classList.add('dissolve');
-	progressWrap.classList.add('dissolve');
-	enterBtn.classList.add('expand');
-
-	setTimeout(function () {
-	  page1.classList.add('fade-out');
-	  page2.classList.add('active');
-
-	  backBtn.style.display = 'block';
-	  musicFab.style.display = 'flex';
-
-	  autoPlayAttempt();
-
-	  if (!toastStarted) {
-		toastStarted = true;
-		setTimeout(startToastSequence, 2600);
-	  } else {
-		resumeToastLoop();
-	  }
-	}, 820);
-
-	setTimeout(function () {
-	  page1.style.display = 'none';
-	}, 2000);
-  });
-
-  /* ==================================================
-	 5. 音乐播放器
-	 ================================================== */
-  const audio = new Audio();
-  audio.preload = 'auto';
-  audio.loop = true;
-
-  const songTitleEl    = document.getElementById('songTitle');
-  const artistEl       = document.getElementById('artist');
-  const playBtn        = document.getElementById('playBtn');
-  const prevBtn        = document.getElementById('prevBtn');
-  const nextBtn        = document.getElementById('nextBtn');
-  const playerProgress = document.getElementById('playerProgress');
-  const currentTimeEl  = document.getElementById('currentTime');
-  const totalTimeEl    = document.getElementById('totalTime');
-  const progressBar    = document.getElementById('progressBar');
-  const playlistEl     = document.getElementById('playlist');
-
-  const ICON_PLAY  = '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
-  const ICON_PAUSE = '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"/></svg>';
-  const CHIP_ICON  = '<svg class="chip-icon" viewBox="0 0 24 24" width="11" height="11"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" fill="currentColor"/></svg>';
-
-  const TRACKS = [
-	{
-	  id:     'is-it-2-far',
-	  src:    './is-it-2-far.mp3',
-	  title:  'is it 2 far？',
-	  artist: 'Vincentz'
-	},
-	{
-	  id:     'but-u',
-	  src:    './but-u.mp3',
-	  title:  'But U (Feat. Ella)',
-	  artist: 'Clear Sky'
-	},
-	{
-	  id:     'we-never',
-	  src:    './we-never.mp3',
-	  title:  'we never（千年之后）',
-	  artist: 'EMO'
-	}
-  ];
-
-  let currentIndex = 0;
-
-  function fmtTime(sec) {
-	if (!isFinite(sec) || sec < 0) sec = 0;
-	const m = Math.floor(sec / 60);
-	const s = Math.floor(sec % 60);
-	return m + ':' + String(s).padStart(2, '0');
+bgAudio.addEventListener('timeupdate', () => {
+  if (!isNaN(bgAudio.duration) && bgAudio.duration > 0) {
+	progressBar.value = (bgAudio.currentTime / bgAudio.duration) * 100;
+	currentTimeEl.textContent = formatTime(bgAudio.currentTime);
   }
+});
 
-  function resetProgressUI() {
-	currentTimeEl.textContent  = '0:00';
-	playerProgress.style.width = '0%';
+// 拖拽进度条
+progressBar.addEventListener('input', () => {
+  if (!isNaN(bgAudio.duration) && bgAudio.duration > 0) {
+	bgAudio.currentTime = (progressBar.value / 100) * bgAudio.duration;
   }
+});
 
-  function setPlayerInfo(track) {
-	songTitleEl.textContent = track.title;
-	artistEl.textContent    = track.artist || '未知歌手';
-	resetProgressUI();
-	totalTimeEl.textContent = '0:00';
-  }
+// 4. 状态同步（监听原生事件，让 UI 图标自动匹配）
+bgAudio.addEventListener('play', () => {
+  musicCtrl.classList.add('playing');
+  playPauseBtn.innerHTML = '⏸';
+});
 
-  function renderPlaylist() {
-	playlistEl.innerHTML = '';
+bgAudio.addEventListener('pause', () => {
+  musicCtrl.classList.remove('playing');
+  playPauseBtn.innerHTML = '▶';
+});
 
-	TRACKS.forEach(function (track, idx) {
-	  const chip = document.createElement('button');
-	  chip.type = 'button';
-	  chip.className = 'song-chip' + (idx === currentIndex ? ' active' : '');
-	  chip.title = track.title;
+bgAudio.addEventListener('error', () => {
+  console.error('音频加载失败，请检查路径或文件名。');
+  document.querySelector('.music-title').textContent = '音频文件加载失败';
+});
 
-	  chip.innerHTML = CHIP_ICON + '<span class="chip-text"></span>';
-	  chip.querySelector('.chip-text').textContent = track.title;
 
-	  chip.addEventListener('click', function () {
-		playTrack(idx);
-	  });
+/* ================== 页面其他交互逻辑 ================== */
 
-	  playlistEl.appendChild(chip);
-	});
-  }
-
-  function playTrack(idx, autoPlay) {
-	if (idx < 0) idx = TRACKS.length - 1;
-	if (idx >= TRACKS.length) idx = 0;
-	if (!TRACKS.length) return;
-
-	currentIndex = idx;
-	const track = TRACKS[idx];
-
-	audio.src = track.src;
-	audio.load();
-	setPlayerInfo(track);
-	renderPlaylist();
-
-	if (autoPlay !== false) {
-	  audio.play().catch(function (err) {
-		console.warn('[播放失败或被拦截]', err && err.name);
-	  });
-	}
-  }
-
-  function autoPlayAttempt() {
-	if (!TRACKS.length) return;
-	const p = audio.play();
-	if (p && typeof p.catch === 'function') {
-	  p.catch(function (err) {
-		console.warn('[自动播放被浏览器拦截] 可点击音乐按钮继续。', err && err.name);
-	  });
-	}
-  }
-
-  audio.addEventListener('error', function () {
-	if (!audio.src) return;
-	const track = TRACKS[currentIndex];
-	console.warn('[音频加载失败] 请确认文件与 HTML 同目录且文件名一致：', track && track.src);
-	songTitleEl.textContent = (track ? track.title : '未知歌曲');
-	artistEl.textContent    = '文件未找到，请检查文件名与路径';
-	totalTimeEl.textContent = '0:00';
-	resetProgressUI();
-  });
-
-  function syncFabPlaying() {
-	if (audio.paused) musicFab.classList.remove('playing');
-	else musicFab.classList.add('playing');
-  }
-
-  audio.addEventListener('play', function () {
-	playBtn.innerHTML = ICON_PAUSE;
-	playBtn.title = '暂停';
-	syncFabPlaying();
-  });
-  audio.addEventListener('pause', function () {
-	playBtn.innerHTML = ICON_PLAY;
-	playBtn.title = '播放';
-	syncFabPlaying();
-  });
-  audio.addEventListener('loadedmetadata', function () {
-	totalTimeEl.textContent = fmtTime(audio.duration);
-  });
-  audio.addEventListener('timeupdate', function () {
-	const d = audio.duration || 0;
-	const t = audio.currentTime || 0;
-	currentTimeEl.textContent  = fmtTime(t);
-	playerProgress.style.width = d ? ((t / d) * 100).toFixed(2) + '%' : '0%';
-  });
-  audio.addEventListener('ended', function () {
-	audio.currentTime = 0;
-	audio.play().catch(function (err) {
-	  console.warn('[单曲循环被浏览器拦截]', err);
-	});
-	syncFabPlaying();
-  });
-
-  playBtn.addEventListener('click', function () {
-	if (!audio.src) {
-	  if (TRACKS.length) playTrack(currentIndex, true);
-	  return;
-	}
-	if (audio.paused) audio.play().catch(function (err) { console.warn('[播放失败]', err); });
-	else audio.pause();
-  });
-
-  prevBtn.addEventListener('click', function () {
-	if (!TRACKS.length) return;
-	playTrack(currentIndex - 1, true);
-  });
-  nextBtn.addEventListener('click', function () {
-	if (!TRACKS.length) return;
-	playTrack(currentIndex + 1, true);
-  });
-
-  progressBar.addEventListener('click', function (e) {
-	if (!audio.duration) return;
-	const rect = progressBar.getBoundingClientRect();
-	const ratio = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
-	audio.currentTime = ratio * audio.duration;
-  });
-
-  if (TRACKS.length) playTrack(0, false);
-  else renderPlaylist();
-
-  musicFab.addEventListener('click', function () {
-	if (!audio.src) {
-	  if (TRACKS.length) playTrack(currentIndex, true);
-	  return;
-	}
-	if (audio.paused) audio.play().catch(function (err) { console.warn('[播放失败]', err); });
-	else audio.pause();
-  });
-
-  /* ==================================================
-	 6. 北京时间 + 日期
-	 ================================================== */
-  const clockEl = document.getElementById('clock');
-  const dateEl  = document.getElementById('date');
-
-  function updateClock() {
-	const t = new Date(Date.now() + 8 * 3600 * 1000);
-	const hh = String(t.getUTCHours()).padStart(2, '0');
-	const mm = String(t.getUTCMinutes()).padStart(2, '0');
-	const ss = String(t.getUTCSeconds()).padStart(2, '0');
-	clockEl.textContent = hh + ':' + mm + ':' + ss;
-
-	const yyyy  = t.getUTCFullYear();
-	const month = t.getUTCMonth() + 1;
-	const day   = t.getUTCDate();
-	dateEl.textContent = yyyy + '年' + month + '月' + day + '日';
-  }
-
-  updateClock();
-  setInterval(updateClock, 1000);
-
-  /* ==================================================
-	 7. 头像替换 + 本地保存
-	 ================================================== */
-  const AVATAR_STORAGE_PREFIX = 'bday_avatar_';
-  const AVATAR_SIZE = 128;
-
-  const avatarFileInput = document.createElement('input');
-  avatarFileInput.type = 'file';
-  avatarFileInput.accept = 'image/*';
-  avatarFileInput.style.display = 'none';
-  document.body.appendChild(avatarFileInput);
-
-  let pendingAvatarKey = null;
-
-  function getStoredAvatar(key) {
-	try { return localStorage.getItem(AVATAR_STORAGE_PREFIX + key) || null; }
-	catch (e) { return null; }
-  }
-
-  function setStoredAvatar(key, dataUrl) {
-	try { localStorage.setItem(AVATAR_STORAGE_PREFIX + key, dataUrl); return true; }
-	catch (e) { console.warn('[头像保存失败]', e); return false; }
-  }
-
-  function compressImage(file, size) {
-	return new Promise(function (resolve, reject) {
-	  const reader = new FileReader();
-	  reader.onload = function (e) {
-		const img = new Image();
-		img.onload = function () {
-		  const canvas = document.createElement('canvas');
-		  canvas.width = canvas.height = size;
-		  const ctx = canvas.getContext('2d');
-
-		  const s  = Math.min(img.width, img.height);
-		  const sx = (img.width  - s) / 2;
-		  const sy = (img.height - s) / 2;
-		  ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
-
-		  try { resolve(canvas.toDataURL('image/jpeg', 0.85)); }
-		  catch (err) { reject(err); }
-		};
-		img.onerror = reject;
-		img.src = e.target.result;
-	  };
-	  reader.onerror = reject;
-	  reader.readAsDataURL(file);
-	});
-  }
-
-  function renderAvatar(iconBox, src, fallbackIcon) {
-	iconBox.innerHTML = '';
-	if (src) {
-	  const img = document.createElement('img');
-	  img.src = src;
-	  img.alt = '';
-	  img.onerror = function () {
-		iconBox.innerHTML = '';
-		iconBox.textContent = fallbackIcon || '🎂';
-	  };
-	  iconBox.appendChild(img);
-	} else {
-	  iconBox.textContent = fallbackIcon || '🎂';
-	}
-  }
-
-  avatarFileInput.addEventListener('change', async function () {
-	const file = avatarFileInput.files && avatarFileInput.files[0];
-	const key  = pendingAvatarKey;
-	avatarFileInput.value = '';
-	pendingAvatarKey = null;
-
-	if (!file || !key) return;
-
-	try {
-	  const dataUrl = await compressImage(file, AVATAR_SIZE);
-	  const ok = setStoredAvatar(key, dataUrl);
-
-	  document.querySelectorAll('[data-avatar-key="' + key + '"]').forEach(function (box) {
-		renderAvatar(box, dataUrl, box.dataset.fallbackIcon);
-	  });
-
-	  if (!ok) alert('图片已替换，但浏览器存储空间不足，刷新后可能恢复为默认头像。');
-	} catch (err) {
-	  console.warn('[头像处理失败]', err);
-	  alert('图片处理失败，请换一张图片试试。');
-	}
-  });
-
-  /* ==================================================
-	 8. 弹窗
-	 ================================================== */
-  const ICONS = ['🎂', '🎁', '🎈', '✨', '🎉', '🧁', '💌'];
-
-  const WISHES = [
-	'愿你今年的蜡烛一吹就灭，愿望一许就成真。',
-	'新的一岁，继续被世界温柔以待。',
-	'生日快乐！今天的你拥有全世界的偏爱。',
-	'把烦恼留在昨天，把蛋糕吃进今天。',
-	'愿你的每一天都像今天一样发光。',
-	'又长大一岁啦，但可爱一点都没变。',
-	'愿所有的好运都在今天为你排队。',
-	'祝你岁岁平安，年年有今日。',
-	'今天的风是甜的，因为你在过生日。',
-	'愿你想去的地方都有路，想见的人都在等你。',
-	'生日快乐，愿你被爱、被记得、被珍惜。',
-	'新的一岁，愿你依旧自由又热烈。',
-	'蛋糕很甜，但没有你甜。',
-	'愿你往后余生，眼里有光，心中有暖。',
-	'生日快乐！愿所有美好都准时赴约。',
-	'祝你今年许的愿，比往年都灵。',
-	'愿你走的路都平坦，遇的人都善良。',
-	'今天你最大，开心最重要。',
-	'愿你的生活像蛋糕一样，层层都是甜的。',
-	'生日快乐，愿你永远拥有说"不"的底气和说"走"的自由。',
-	'突然想起来今天是你的生日。',
-	'没什么，就是路过，说一声。',
-	'祝你今年少熬夜。',
-	'47，生日快乐。（来自一个不具名的人）'
-  ];
-
-  let wishPool = [];
-
-  function sleep(ms) {
-	return new Promise(function (r) { setTimeout(r, ms); });
-  }
-
-  function randomWish() {
-	if (!wishPool.length) {
-	  wishPool = WISHES.slice();
-	  for (let i = wishPool.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		const tmp = wishPool[i];
-		wishPool[i] = wishPool[j];
-		wishPool[j] = tmp;
-	  }
-	}
-	return wishPool.pop();
-  }
-
-  function randomIcon() {
-	return ICONS[Math.floor(Math.random() * ICONS.length)];
-  }
-
-  function createToastEl(signer, wish, icon, opts) {
-	opts = opts || {};
-	const avatar    = opts.avatar || null;
-	const avatarKey = opts.avatarKey || null;
-	const contact   = opts.contact || null;
-
+/* ---------- 点击雪花 ---------- */
+function snowBurst(x, y) {
+  const COUNT = 14;
+  for (let i = 0; i < COUNT; i++) {
 	const el = document.createElement('div');
-	el.className = 'toast-item';
-	el.innerHTML =
-	  '<div class="toast-icon"></div>' +
-	  '<div class="toast-body">' +
-		'<div class="toast-head">' +
-		  '<span class="toast-name"></span>' +
-		  '<span class="toast-time">刚刚</span>' +
-		'</div>' +
-		'<div class="toast-msg"></div>' +
-	  '</div>';
+	el.className = 'snow';
+	el.textContent = '❄';
+	el.style.left = x + 'px';
+	el.style.top  = y + 'px';
+	el.style.fontSize = (11 + Math.random() * 8).toFixed(1) + 'px';
+	document.body.appendChild(el);
 
-	el.querySelector('.toast-name').textContent = signer;
-	el.querySelector('.toast-msg').textContent  = wish;
+	const ang  = (Math.PI * 2 * i) / COUNT + Math.random() * 0.55;
+	const dist = 34 + Math.random() * 26;
+	const dx = Math.cos(ang) * dist;
+	const dy = Math.sin(ang) * dist;
+	const dur = 650 + Math.random() * 400;
+	const rot = (Math.random() * 240 - 120).toFixed(0);
 
-	const iconBox = el.querySelector('.toast-icon');
+	const anim = el.animate([
+	  { transform: 'translate(-50%,-50%) scale(.3) rotate(0deg)', opacity: 1 },
+	  { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.25) rotate(${rot}deg)`, opacity: 0 }
+	], { duration: dur, easing: 'cubic-bezier(.2,.7,.3,1)' });
 
-	if (avatarKey) {
-	  iconBox.dataset.avatarKey = avatarKey;
-	  iconBox.dataset.fallbackIcon = icon;
-	  iconBox.title = '点击更换头像';
-
-	  const stored = getStoredAvatar(avatarKey);
-	  renderAvatar(iconBox, stored || avatar, icon);
-
-	  iconBox.addEventListener('click', function (e) {
-		e.stopPropagation();
-		pendingAvatarKey = avatarKey;
-		avatarFileInput.click();
-	  });
-	} else {
-	  iconBox.textContent = icon;
-	}
-
-	if (contact) {
-	  el.dataset.jump = 'key';
-	  el.title = '点击进入「' + contact.shortName + '」的页面';
-	  el.addEventListener('click', function (e) {
-		if (e.target.closest('.toast-icon')) return;
-		goToKeyPage(contact);
-	  });
-	} else {
-	  el.addEventListener('click', function () {
-		el.classList.toggle('expanded');
-	  });
-	}
-
-	return el;
+	anim.onfinish = () => el.remove();
   }
+}
 
-  function pushToast(el) {
-	toastArea.appendChild(el);
-	void el.offsetHeight;
-	el.classList.add('entered');
+/* ---------- 第一页 → 第二页 ---------- */
+const page1 = document.getElementById('page1');
+const page2 = document.getElementById('page2');
+let switched = false;
+page1.addEventListener('click', (e) => {
+  if (switched) return;
+  switched = true;
 
-	while (toastArea.children.length > 12) {
-	  toastArea.removeChild(toastArea.firstChild);
-	}
-  }
+  snowBurst(e.clientX, e.clientY);
 
-  let toastStopped = false;
-  let toastTimers = [];
-
-  function stopToastLoop() {
-	toastStopped = true;
-	toastTimers.forEach(function (t) { clearTimeout(t); });
-	toastTimers = [];
-  }
-
-  function startAnonLoop() {
-	const loop = function () {
-	  if (toastStopped) return;
-	  const el = createToastEl('匿名访客', randomWish(), randomIcon(), {});
-	  pushToast(el);
-	  toastTimers.push(setTimeout(loop, 7000 + Math.random() * 5000));
-	};
-	toastTimers.push(setTimeout(loop, 6000));
-  }
-
-  function resumeToastLoop() {
-	if (!toastStarted || !toastStopped) return;
-	toastStopped = false;
-	toastTimers = [];
-	startAnonLoop();
-  }
-
-  async function startToastSequence() {
-	toastStarted = true;
-	toastStopped = false;
-
-	for (let i = 0; i < CONTACTS.length; i++) {
-	  if (toastStopped) return;
-	  await sleep(i === 0 ? 400 : 1000);
-	  if (toastStopped) return;
-
-	  const c = CONTACTS[i];
-	  const el = createToastEl(c.signer, c.wish, randomIcon(), {
-		avatar: c.avatar,
-		avatarKey: c.key,
-		contact: c
-	  });
-	  pushToast(el);
-	}
-
-	if (toastStopped) return;
-	startAnonLoop();
-  }
-
-  /* ==================================================
-	 9. 密钥页 & 留言存储
-	 ================================================== */
-  function getSavedLetter(contact) {
-	if (!contact) return '';
-	let local = '';
-	try { local = localStorage.getItem(contact.letterKey) || ''; } catch (e) {}
-	if (local.trim()) return local;
-	return DEFAULT_LETTERS[contact.key] || '';
-  }
-
-  function loadDraft(contact) {
-	if (!contact) return '';
-	try { return localStorage.getItem(contact.draftKey) || ''; }
-	catch (e) { return ''; }
-  }
-
-  function resetKeyFlow() {
-	keyEntering = false;
-	keyUnlocked = false;
-	keySubmit.disabled = false;
-	keySubmit.classList.remove('visible');
-	keyCard.classList.remove('sand-out');
-	keyInput.value = '';
-	keyError.classList.remove('show');
-	keyError.textContent = '密码错误，请重新输入...';
-  }
-
-  /* 清空访客页余韵元素 */
-  function clearVisitorExtras() {
-	typingHint.classList.remove('show');
-	typingHint.querySelector('.dots').textContent = '';
-	visitorSign.classList.remove('show');
-	visitorSign.textContent = '';
-	readBtnWrap.classList.remove('show');
-	readBtn.classList.remove('done');
-	readBtn.disabled = false;
-	readBtn.textContent = '♡ 我收到了';
-  }
-
-  /* 回到第二页 */
-  function backToHome() {
-	navSeq++;
-	visitorTypeSeq++;
-	stopToastLoop();
-	closeFinale();
-
-	pageEditor.classList.remove('active');
-	pageVisitor.classList.remove('active');
-	pageVisitor.classList.remove('visitor-shatter-out');
-	pageKey.classList.remove('active');
-	pageEnvelope.classList.remove('active');
-
-	page2.classList.remove('sand-out');
+  setTimeout(() => {
+	page1.classList.remove('active');
 	page2.classList.add('active');
+	initPage2();
+  }, 280);
+});
 
-	visitorContent.classList.remove('typing');
-	visitorContent.textContent = '';
-	clearVisitorExtras();
+/* ---------- 第二页初始化 ---------- */
+const meetBtn = document.getElementById('meetBtn');
+const bar = document.getElementById('bar');
+const quote = document.getElementById('quote');
+const divider = document.getElementById('divider');
+const tabStyle = document.getElementById('tabStyle');
+const tabNotice = document.getElementById('tabNotice');
+let btnTriggered = false;
 
-	resetKeyFlow();
-	currentContact = null;
+function initPage2() {
+  const delay = (0.3 + Math.random() * 0.6).toFixed(2) + 's';
+  const rise  = (28 + Math.random() * 48).toFixed(0) + 'px';
+  meetBtn.style.setProperty('--delay', delay);
+  meetBtn.style.setProperty('--rise', rise);
+  meetBtn.classList.add('reveal');
 
-	backBtn.style.display = 'block';
-	musicFab.style.display = 'flex';
+  setTimeout(() => bar.classList.add('show'), 900);
+  setTimeout(() => quote.classList.add('show'), 1200);
+  
+  setTimeout(() => {
+	divider.classList.add('show');
+	setTimeout(() => {
+	  tabStyle.classList.add('show');
+	  tabNotice.classList.add('show');
+	}, 300);
+  }, 2000); 
+}
 
-	if (toastStarted) {
-	  toastArea.innerHTML = '';
-	  toastStopped = false;
-	  toastTimers = [];
-	  startToastSequence();
-	}
-  }
+/* ---------- 点击「认识我」 ---------- */
+const circle = document.getElementById('circle');
+const info = document.getElementById('info');
 
-  /* 回到第一页 */
-  function backToFirstPage() {
-	navSeq++;
-	visitorTypeSeq++;
-	stopToastLoop();
-	closeFinale();
+meetBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (btnTriggered) return;
+  btnTriggered = true;
 
-	toastArea.innerHTML = '';
-	toastStarted = false;
+  meetBtn.classList.add('dissolve');
+  meetBtn.style.pointerEvents = 'none';
+  setTimeout(() => { meetBtn.style.display = 'none'; }, 700);
 
-	page2.classList.remove('active', 'sand-out');
-	pageEditor.classList.remove('active');
-	pageVisitor.classList.remove('active');
-	pageVisitor.classList.remove('visitor-shatter-out');
-	pageKey.classList.remove('active');
-	pageEnvelope.classList.remove('active');
+  setTimeout(() => { circle.classList.add('show'); }, 220);
+  setTimeout(() => { circle.classList.add('move'); }, 950);
+  setTimeout(() => { info.classList.add('show'); }, 1950);
+});
 
-	visitorContent.classList.remove('typing');
-	visitorContent.textContent = '';
-	clearVisitorExtras();
+/* ---------- 风格/须知 交互逻辑 ---------- */
+const tabs = document.getElementById('tabs');
+const styleContent = document.getElementById('styleContent');
+const noticeContent = document.getElementById('noticeContent');
+const arrowNext = document.getElementById('arrowNext');
 
-	resetKeyFlow();
-	currentContact = null;
+let currentTab = null;
+let noticeVisited = false;
 
-	page1.style.display = '';
-	page1.classList.remove('fade-out');
-	titleEl.classList.remove('dissolve');
-	progressWrap.classList.remove('dissolve');
-	enterBtn.classList.remove('expand');
-	fillEl.style.width = '100%';
-	numEl.textContent = '100%';
-	enterBtn.classList.add('show');
-	leaving = false;
+tabStyle.addEventListener('click', () => {
+  if (currentTab === 'style') closeAll();
+  else openStyle();
+});
 
-	backBtn.style.display = 'none';
-	musicFab.style.display = 'none';
-  }
+tabNotice.addEventListener('click', () => {
+  if (currentTab === 'notice') closeAll();
+  else openNotice();
+});
 
-  /* 进入密钥页 */
-  function goToKeyPage(contact) {
-	if (!contact) return;
-	if (keyEntering) return;
-	if (pageKey.classList.contains('active')) return;
-	if (pageEditor.classList.contains('active')) return;
-	if (pageVisitor.classList.contains('active')) return;
+function openStyle() {
+  currentTab = 'style';
+  tabs.classList.add('style-mode');
+  tabs.classList.remove('notice-mode');
+  tabStyle.classList.add('active');
+  tabNotice.classList.remove('active');
 
-	keyEntering = true;
-	currentContact = contact;
+  styleContent.classList.add('active');
+  noticeContent.classList.remove('active');
 
-	const mySeq = ++navSeq;
-	stopToastLoop();
-
-	page2.classList.add('sand-out');
-
-	setTimeout(function () {
-	  if (mySeq !== navSeq) return;
-
-	  page2.classList.remove('active', 'sand-out');
-
-	  keyCard.classList.remove('sand-out');
-	  keySubmit.disabled = false;
-	  keySubmit.classList.remove('visible');
-	  keyInput.value = '';
-	  keyError.classList.remove('show');
-	  keyError.textContent = '密码错误，请重新输入...';
-	  keyUnlocked = false;
-
-	  pageKey.classList.add('active');
-	  setTimeout(function () { keyInput.focus(); }, 400);
-	}, 1000);
-  }
-
-  keyInput.addEventListener('input', function () {
-	keySubmit.classList.toggle('visible', keyInput.value.length > 0);
-	keyError.classList.remove('show');
+  styleContent.querySelectorAll('.tag').forEach(t => {
+	t.classList.remove('show');
+	void t.offsetWidth;
+	t.classList.add('show');
   });
+  
+  const misc = styleContent.querySelector('.misc-text');
+  if(misc) {
+	misc.classList.remove('show');
+	void misc.offsetWidth;
+	misc.classList.add('show');
+  }
+}
 
-  keyInput.addEventListener('keydown', function (e) {
-	if (e.key === 'Enter') submitKey();
+function openNotice() {
+  currentTab = 'notice';
+  noticeVisited = true;
+  tabs.classList.add('notice-mode');
+  tabs.classList.remove('style-mode');
+  
+  tabNotice.classList.add('active');
+  tabStyle.classList.remove('active');
+
+  noticeContent.classList.add('active');
+  styleContent.classList.remove('active');
+  
+  noticeContent.querySelectorAll('.notice-item').forEach(item => {
+	item.classList.remove('show');
+	void item.offsetWidth;
+	item.classList.add('show');
   });
+}
 
-  keySubmit.addEventListener('click', submitKey);
-
-  function submitKey() {
-	if (keyUnlocked || !currentContact) return;
-
-	const val = keyInput.value.trim();
-	if (!val) return;
-
-	const contact = currentContact;
-
-	if (val === EDIT_PASS) {
-	  keyUnlocked = true;
-	  keySubmit.disabled = true;
-
-	  const mySeq = ++navSeq;
-	  sandDissolve(keyCard, function () {
-		if (mySeq !== navSeq) return;
-
-		pageKey.classList.remove('active');
-		pageEditor.classList.add('active');
-
-		editorToEl.textContent = contact.toTitle;
-		letterText.placeholder =
-		  '在这里写下想对' + contact.shortName + '说的话，保存后访客将看到这段文字...';
-
-		const saved = getSavedLetter(contact);
-		const draft = loadDraft(contact);
-		letterText.value = draft || saved || '';
-
-		setTimeout(function () { letterText.focus(); }, 400);
-	  });
-	} else if (val === contact.viewPass) {
-	  const saved = getSavedLetter(contact);
-	  if (!saved) {
-		keyError.textContent = '暂无公开内容，请先用 ' + EDIT_PASS + ' 编辑并保存';
-		keyError.classList.add('show');
-		keyInput.select();
-		return;
-	  }
-
-	  keyUnlocked = true;
-	  keySubmit.disabled = true;
-
-	  const mySeq = ++navSeq;
-	  sandDissolve(keyCard, function () {
-		if (mySeq !== navSeq) return;
-
-		pageKey.classList.remove('active');
-		pageVisitor.classList.add('active');
-		pageVisitor.classList.remove('visitor-shatter-out');
-
-		visitorToEl.textContent = contact.toTitle;
-		typeVisitor(saved);
-	  });
-	} else {
-	  keyError.textContent = '密码错误，请重新输入...';
-	  keyError.classList.add('show');
-	  keyInput.select();
-	}
+function closeAll() {
+  currentTab = null;
+  tabs.classList.remove('style-mode', 'notice-mode');
+  
+  tabStyle.classList.remove('active');
+  tabNotice.classList.remove('active');
+  
+  styleContent.classList.remove('active');
+  noticeContent.classList.remove('active');
+  
+  if (noticeVisited) {
+	arrowNext.classList.add('show');
   }
+}
 
-  function sandDissolve(card, done) {
-	const rect = card.getBoundingClientRect();
+/* ---------- 最终散开与寄语 ---------- */
+const stack = document.getElementById('stack');
+const finalScreen = document.getElementById('finalScreen');
 
-	for (let i = 0; i < 46; i++) {
-	  const p = document.createElement('div');
-	  p.className = 'sand-particle';
-	  const size = 2 + Math.random() * 4;
-	  p.style.width  = size + 'px';
-	  p.style.height = size + 'px';
-	  p.style.left = (rect.left + Math.random() * rect.width) + 'px';
-	  p.style.top  = (rect.top  + Math.random() * rect.height) + 'px';
-	  p.style.setProperty('--dx', (Math.random() * 240 - 120).toFixed(0) + 'px');
-	  p.style.setProperty('--dy', (80 + Math.random() * 220).toFixed(0) + 'px');
-	  p.style.animationDelay = (Math.random() * .25).toFixed(2) + 's';
+arrowNext.addEventListener('click', () => {
+  arrowNext.classList.remove('show');
+  stack.classList.add('vanish');
+  setTimeout(() => {
+	finalScreen.classList.add('show');
+  }, 800); 
+});
 
-	  document.body.appendChild(p);
-	  setTimeout(function () { p.remove(); }, 1700);
-	}
-
-	card.classList.add('sand-out');
-	setTimeout(done, 1000);
+/* ---------- 最终页点击返回 ---------- */
+finalScreen.addEventListener('click', () => {
+  if (!finalScreen.classList.contains('show')) return;
+  
+  finalScreen.classList.remove('show');
+  page2.classList.remove('active');
+  page1.classList.add('active');
+  
+  const l1 = document.querySelector('.line1');
+  const l2 = document.querySelector('.line2');
+  if (l1 && l2) {
+	l1.style.animation = 'none';
+	l2.style.animation = 'none';
+	void l1.offsetWidth;
+	l1.style.animation = '';
+	l2.style.animation = '';
   }
-
-  /* ==================================================
-	 10. 编辑页
-	 ================================================== */
-  letterText.addEventListener('input', function () {
-	if (!currentContact) return;
-	try { localStorage.setItem(currentContact.draftKey, letterText.value); } catch (e) {}
-  });
-
-  let statusTimer = null;
-  function showStatus(text, isError) {
-	letterStatus.textContent = text;
-	letterStatus.style.color = isError ? '#ff8a8a' : 'rgba(150, 210, 180, .85)';
-	letterStatus.classList.add('show');
-
-	clearTimeout(statusTimer);
-	statusTimer = setTimeout(function () {
-	  letterStatus.classList.remove('show');
-	}, 1800);
-  }
-
-  letterSave.addEventListener('click', function () {
-	if (!currentContact) return;
-
-	const val = letterText.value.trim();
-
-	if (!val) {
-	  showStatus('内容不能为空', true);
-	  letterText.focus();
-	  return;
-	}
-
-	try {
-	  localStorage.setItem(currentContact.letterKey, val);
-	  localStorage.removeItem(currentContact.draftKey);
-	} catch (e) {}
-
-	showStatus('已保存到本机，即将返回首页');
-
-	setTimeout(function () {
-	  backToHome();
-	}, 1200);
-  });
-
-  letterUndo.addEventListener('click', function () {
-	letterText.value = '';
-	if (currentContact) {
-	  try { localStorage.removeItem(currentContact.draftKey); } catch (e) {}
-	}
-	showStatus('已撤销');
-	letterText.focus();
-  });
-
-  /* ==================================================
-	 10.1 永久保存
-	 ================================================== */
-  letterPerm.addEventListener('click', function () {
-	if (!currentContact) return;
-
-	const val = letterText.value.trim();
-	if (!val) {
-	  showStatus('内容不能为空', true);
-	  letterText.focus();
-	  return;
-	}
-
-	try {
-	  localStorage.setItem(currentContact.letterKey, val);
-	  localStorage.removeItem(currentContact.draftKey);
-	} catch (e) {}
-
-	DEFAULT_LETTERS[currentContact.key] = val;
-
-	const clone = document.documentElement.cloneNode(true);
-
-	const snow = clone.querySelector('#snow-layer');
-	if (snow) snow.innerHTML = '';
-	const ta = clone.querySelector('#toastArea');
-	if (ta) ta.innerHTML = '';
-	clone.querySelectorAll('.sand-particle').forEach(function (el) { el.remove(); });
-	clone.querySelectorAll('.shatter-bit').forEach(function (el) { el.remove(); });
-	clone.querySelectorAll('.dust-bit').forEach(function (el) { el.remove(); });
-	clone.querySelectorAll('input[type="file"]').forEach(function (el) { el.remove(); });
-
-	const lt = clone.querySelector('#letterText');
-	if (lt) { lt.textContent = ''; lt.removeAttribute('placeholder'); }
-	const vc = clone.querySelector('#visitorContent');
-	if (vc) { vc.textContent = ''; vc.classList.remove('typing'); }
-	const vto = clone.querySelector('#visitorTo');
-	if (vto) vto.textContent = 'To：陈伶';
-	const eto = clone.querySelector('#editorTo');
-	if (eto) eto.textContent = 'To：陈伶';
-	const kerr = clone.querySelector('#keyError');
-	if (kerr) {
-	  kerr.textContent = '密码错误，请重新输入...';
-	  kerr.classList.remove('show');
-	}
-	const ki = clone.querySelector('#keyInput');
-	if (ki) ki.removeAttribute('value');
-
-	const th = clone.querySelector('#typingHint');
-	if (th) { th.classList.remove('show'); const d = th.querySelector('.dots'); if (d) d.textContent = ''; }
-	const vs = clone.querySelector('#visitorSign');
-	if (vs) { vs.classList.remove('show'); vs.textContent = ''; }
-	const rbw = clone.querySelector('#readBtnWrap');
-	if (rbw) rbw.classList.remove('show');
-	const rb = clone.querySelector('#readBtn');
-	if (rb) { rb.classList.remove('done'); rb.disabled = false; rb.textContent = '♡ 我收到了'; }
-
-	/* 收尾页重置 */
-	const fz = clone.querySelector('#finale');
-	if (fz) fz.classList.remove('active');
-	const fzt = clone.querySelector('#finaleText');
-	if (fzt) fzt.innerHTML = '';
-
-	clone.querySelectorAll('.page-layer').forEach(function (el) {
-	  el.classList.remove('active', 'fade-out', 'sand-out', 'visitor-shatter-out');
-	});
-	const p1 = clone.querySelector('#page1');
-	if (p1) p1.removeAttribute('style');
-	const bb = clone.querySelector('#backBtn');
-	if (bb) bb.removeAttribute('style');
-	const mf = clone.querySelector('#musicFab');
-	if (mf) mf.setAttribute('style', 'display: none;');
-	const tt = clone.querySelector('#title');
-	if (tt) tt.classList.remove('dissolve');
-	const pw = clone.querySelector('#progressWrap');
-	if (pw) pw.classList.remove('dissolve');
-	const eb = clone.querySelector('#enterBtn');
-	if (eb) eb.classList.remove('expand', 'show');
-	const pf = clone.querySelector('#progressFill');
-	if (pf) pf.style.width = '0%';
-	const pn = clone.querySelector('#progressNum');
-	if (pn) pn.textContent = '0%';
-	const kc = clone.querySelector('.key-card');
-	if (kc) kc.classList.remove('sand-out');
-	const ks = clone.querySelector('#keySubmit');
-	if (ks) {
-	  ks.disabled = false;
-	  ks.classList.remove('visible');
-	}
-
-	const scripts = clone.querySelectorAll('script');
-	const mainScript = scripts[scripts.length - 1];
-	if (mainScript) {
-	  let code = mainScript.textContent;
-	  const json = JSON.stringify(DEFAULT_LETTERS, null, 2).replace(/<\//g, '<\\/');
-	  code = code.replace(
-		/\/\* @DEFAULT_LETTERS_START \*\/[\s\S]*?\/\* @DEFAULT_LETTERS_END \*\//,
-		function () {
-		  return '/* @DEFAULT_LETTERS_START */\n' +
-				 'const DEFAULT_LETTERS = ' + json + ';\n' +
-				 '/* @DEFAULT_LETTERS_END */';
-		}
-	  );
-	  mainScript.textContent = code;
-	}
-
-	const html = '<!DOCTYPE html>\n' + clone.outerHTML;
-	const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-	const url = URL.createObjectURL(blob);
-	const a = document.createElement('a');
-	a.href = url;
-	a.download = '生日祝福_永久版.html';
-	document.body.appendChild(a);
-	a.click();
-	document.body.removeChild(a);
-	setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-
-	showStatus('已下载永久版，用它替换原文件即可');
-  });
-
-  [editorToEl, visitorToEl].forEach(function (el) {
-	el.addEventListener('click', function () {
-	  backToHome();
-	});
-  });
-
-  /* ==================================================
-	 11. 访客页打字机
-	 ================================================== */
-  const READ_PREFIX = 'bday_read_';
-
-  function getReadFlag(key) {
-	try { return localStorage.getItem(READ_PREFIX + key) === '1'; }
-	catch (e) { return false; }
-  }
-
-  function setReadFlag(key) {
-	try { localStorage.setItem(READ_PREFIX + key, '1'); }
-	catch (e) {}
-  }
-
-  function renderReadState(contact) {
-	if (!contact) return;
-	if (getReadFlag(contact.key)) {
-	  readBtn.classList.add('done');
-	  readBtn.disabled = true;
-	  readBtn.textContent = '已收到 ✓';
-	} else {
-	  readBtn.classList.remove('done');
-	  readBtn.disabled = false;
-	  readBtn.textContent = '♡ 我收到了';
-	}
-  }
-
-  function burstHearts() {
-	for (let i = 0; i < 22; i++) {
-	  const p = document.createElement('div');
-	  p.className = 'sand-particle';
-	  const size = 3 + Math.random() * 4;
-	  p.style.width  = size + 'px';
-	  p.style.height = size + 'px';
-	  p.style.background = i % 2 ? '#ffd6e6' : '#bfe0ff';
-	  p.style.left = (window.innerWidth  / 2 + (Math.random() * 120 - 60)) + 'px';
-	  p.style.top  = (window.innerHeight / 2 + (Math.random() * 80 - 40)) + 'px';
-	  p.style.setProperty('--dx', (Math.random() * 260 - 130).toFixed(0) + 'px');
-	  p.style.setProperty('--dy', (-120 - Math.random() * 180).toFixed(0) + 'px');
-	  p.style.animationDelay = (Math.random() * .2).toFixed(2) + 's';
-	  p.style.zIndex = 3000;
-	  document.body.appendChild(p);
-	  setTimeout(function () { p.remove(); }, 1500);
-	}
-  }
-
-  function buildSignText(contact) {
-	if (!contact) return '';
-	const t = new Date(Date.now() + 8 * 3600 * 1000);
-	const yyyy  = t.getUTCFullYear();
-	const month = t.getUTCMonth() + 1;
-	const day   = t.getUTCDate();
-	const mm    = String(month).padStart(2, '0');
-	const dd    = String(day).padStart(2, '0');
-	return '—— 写于 ' + yyyy + '.' + mm + '.' + dd + '  ·  肆柒';
-  }
-
-  function typeVisitor(text) {
-	const mySeq = ++visitorTypeSeq;
-	const contact = currentContact;
-
-	visitorContent.textContent = '';
-	visitorContent.classList.remove('typing');
-	visitorSign.classList.remove('show');
-	visitorSign.textContent = '';
-	readBtnWrap.classList.remove('show');
-
-	typingHint.querySelector('.dots').textContent = '';
-	typingHint.classList.add('show');
-
-	setTimeout(function () {
-	  if (mySeq !== visitorTypeSeq) return;
-	  typingHint.classList.remove('show');
-
-	  setTimeout(function () {
-		if (mySeq !== visitorTypeSeq) return;
-
-		visitorContent.classList.add('typing');
-
-		let i = 0;
-		const speed = text.length > 300 ? 18 : 32;
-
-		function step() {
-		  if (mySeq !== visitorTypeSeq) return;
-		  if (i >= text.length) {
-			visitorContent.classList.remove('typing');
-
-			visitorSign.textContent = buildSignText(contact);
-			visitorSign.classList.add('show');
-
-			renderReadState(contact);
-			setTimeout(function () {
-			  if (mySeq !== visitorTypeSeq) return;
-			  readBtnWrap.classList.add('show');
-			}, 700);
-			return;
-		  }
-		  visitorContent.textContent += text.charAt(i++);
-		  setTimeout(step, speed);
-		}
-		step();
-	  }, 450);
-	}, 1200);
-  }
-
-  /* ==================================================
-	 12. 全页碎片消散 + 黑屏收尾	 ================================================== */
-  const FINALE_TEXT = '遇见你，是奖励之外的惊喜。';
-
-  function closeFinale() {
-	finaleRunning = false;
-	finale.classList.remove('active');
-	finaleText.innerHTML = '';
-	document.body.style.cursor = '';
-  }
-
-  function buildFinaleText() {
-	finaleText.innerHTML = '';
-	const chars = FINALE_TEXT.split('');
-	chars.forEach(function (c, idx) {
-	  const span = document.createElement('span');
-	  span.className = 'ch';
-	  if (c === ' ') {
-		span.innerHTML = '&nbsp;';
-	  } else {
-		span.textContent = c;
-	  }
-	  span.style.transitionDelay = (idx * 0.09) + 's';
-	  finaleText.appendChild(span);
-	});
-  }
-
-  function startFinale() {
-	if (finaleRunning) return;
-	finaleRunning = true;
-
-	/* 1. 当前可见的访客页元素：文字 / 按钮先碎 */
-	const letterEl = document.querySelector('.letter-visitor');
-	const rects = [];
-
-	/* 收集需要碎裂的可见元素：内容、签名、按钮、To */
-	const targets = [
-	  visitorToEl,
-	  visitorContent,
-	  visitorSign,
-	  readBtn,
-	  typingHint
-	].filter(function (el) {
-	  return el && el.offsetParent !== null && el.getBoundingClientRect().width > 0;
-	});
-
-	/* 2. 用碎片覆盖：按元素矩形撒碎片（比逐字拆更稳） */
-	targets.forEach(function (el) {
-	  const r = el.getBoundingClientRect();
-	  if (r.width <= 0 || r.height <= 0) return;
-	  rects.push(r);
-	});
-
-	/* 若没拿到矩形（极端情况），用整页 */
-	if (!rects.length) {
-	  rects.push({ left: 0, top: 0, width: window.innerWidth, height: window.innerHeight });
-	}
-
-	const totalW = rects.reduce(function (s, r) { return s + r.width * r.height; }, 0);
-	const bitCount = Math.min(420, Math.max(160, Math.round(totalW / 900)));
-
-	for (let i = 0; i < bitCount; i++) {
-	  /* 随机选一个矩形，随机取点 */
-	  const r = rects[Math.floor(Math.random() * rects.length)];
-	  const x = r.left + Math.random() * r.width;
-	  const y = r.top  + Math.random() * r.height;
-
-	  const bit = document.createElement('div');
-	  bit.className = 'shatter-bit';
-
-	  const isDust = Math.random() < 0.35;
-	  const size = isDust ? (1 + Math.random() * 2) : (2 + Math.random() * 5);
-
-	  bit.style.left = x + 'px';
-	  bit.style.top  = y + 'px';
-	  bit.style.width  = size + 'px';
-	  bit.style.height = size + 'px';
-
-	  if (isDust) {
-		bit.style.borderRadius = '50%';
-		bit.style.background = 'rgba(200, 228, 255, ' + (0.35 + Math.random() * 0.4) + ')';
-	  } else {
-		bit.style.borderRadius = '1px';
-		bit.style.background = i % 3 === 0
-		  ? 'rgba(220, 240, 255, .85)'
-		  : 'rgba(160, 200, 240, .75)';
-		bit.style.boxShadow = '0 0 6px rgba(160, 200, 240, .45)';
-	  }
-
-	  const dx = (Math.random() * 260 - 130);
-	  const dy = (-80 - Math.random() * 260);
-	  const rot = (Math.random() * 720 - 360) + 'deg';
-	  const sc = (0.2 + Math.random() * 0.5).toFixed(2);
-	  const dur = (1.2 + Math.random() * 1.4).toFixed(2) + 's';
-	  const delay = (Math.random() * 0.35).toFixed(2) + 's';
-
-	  bit.style.setProperty('--dx', dx.toFixed(0) + 'px');
-	  bit.style.setProperty('--dy', dy.toFixed(0) + 'px');
-	  bit.style.setProperty('--rot', rot);
-	  bit.style.setProperty('--sc', sc);
-	  bit.style.setProperty('--dur', dur);
-	  bit.style.setProperty('--delay', delay);
-	  bit.style.setProperty('--o0', (0.55 + Math.random() * 0.45).toFixed(2));
-
-	  document.body.appendChild(bit);
-	  setTimeout(function () { bit.remove(); }, 3200);
-	}
-
-	/* 3. 额外撒一层细灰尘 */
-	for (let i = 0; i < 70; i++) {
-	  const d = document.createElement('div');
-	  d.className = 'dust-bit';
-	  const size = 1 + Math.random() * 2.5;
-	  d.style.width  = size + 'px';
-	  d.style.height = size + 'px';
-	  d.style.left = (Math.random() * window.innerWidth) + 'px';
-	  d.style.top  = (Math.random() * window.innerHeight) + 'px';
-	  d.style.setProperty('--dx', (Math.random() * 300 - 150).toFixed(0) + 'px');
-	  d.style.setProperty('--dy', (-100 - Math.random() * 260).toFixed(0) + 'px');
-	  d.style.setProperty('--dur', (1.8 + Math.random() * 1.4).toFixed(2) + 's');
-	  d.style.setProperty('--delay', (Math.random() * 0.4).toFixed(2) + 's');
-	  d.style.opacity = (0.3 + Math.random() * 0.5).toFixed(2);
-	  document.body.appendChild(d);
-	  setTimeout(function () { d.remove(); }, 3600);
-	}
-
-	/* 4. 访客页整体模糊淡出 */
-	pageVisitor.classList.add('visitor-shatter-out');
-
-	/* 5. 隐藏返回 / 音乐按钮 */
-	backBtn.style.display = 'none';
-	musicFab.style.display = 'none';
-
-	/* 6. 黑屏淡入 + 文本逐字 */
-	setTimeout(function () {
-	  buildFinaleText();
-	  finale.classList.add('active');
-
-	  /* 等黑屏过渡完，再逐字 */
-	  setTimeout(function () {
-		const chars = finaleText.querySelectorAll('.ch');
-		chars.forEach(function (span) {
-		  span.classList.add('show');
-		});
-	  }, 1100);
-	}, 620);
-
-	/* 7. 收尾结束后，允许点任意处回首页 */
-	setTimeout(function () {
-	  if (!finaleRunning) return;
-	  document.body.style.cursor = 'pointer';
-	  const handler = function () {
-		document.body.removeEventListener('click', handler);
-		if (!finaleRunning) return;
-		closeFinale();
-		backToHome();
-	  };
-	  document.body.addEventListener('click', handler);
-	}, 4200);
-  }
-
-  readBtn.addEventListener('click', function () {
-	if (!currentContact) return;
-	if (readBtn.classList.contains('done')) return;
-	setReadFlag(currentContact.key);
-	readBtn.classList.add('done');
-	readBtn.disabled = true;
-	readBtn.textContent = '已收到 ✓';
-	burstHearts();
-	/* 粒子稍散开后再进入收尾 */
-	setTimeout(startFinale, 620);
-  });
-
-})();
+  
+  resetPage2();
+});
+
+/* ---------- 重置第二页状态 ---------- */
+function resetPage2() {
+  stack.classList.remove('vanish');
+  
+  meetBtn.classList.remove('reveal', 'dissolve');
+  meetBtn.style.display = ''; 
+  meetBtn.style.pointerEvents = '';
+  meetBtn.style.removeProperty('--delay');
+  meetBtn.style.removeProperty('--rise');
+  
+  circle.classList.remove('show', 'move');
+  info.classList.remove('show');
+  bar.classList.remove('show');
+  quote.classList.remove('show');
+  
+  divider.classList.remove('show');
+  tabStyle.classList.remove('show', 'active');
+  tabNotice.classList.remove('show', 'active');
+  tabs.classList.remove('style-mode', 'notice-mode');
+  
+  styleContent.classList.remove('active');
+  noticeContent.classList.remove('active');
+  
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('show'));
+  document.querySelectorAll('.notice-item').forEach(item => item.classList.remove('show'));
+  
+  arrowNext.classList.remove('show');
+  
+  currentTab = null;
+  noticeVisited = false;
+  btnTriggered = false;
+  switched = false;
+}
 </script>
- </body>
+</body>
 </html>
